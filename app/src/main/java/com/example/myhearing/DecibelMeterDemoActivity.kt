@@ -3,8 +3,10 @@ package com.example.myhearing
 import android.Manifest
 import android.content.pm.PackageManager
 import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
+import android.widget.VideoView
 import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -20,6 +22,18 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.db_demo)
+
+        val videoView: VideoView = findViewById(R.id.videoView)
+        val videoPath = "android.resource://" + packageName + "/" + R.raw.dbmetervideo
+        videoView.setVideoURI(Uri.parse(videoPath))
+        // Set an OnCompletionListener to restart the video when it finishes
+        videoView.setOnCompletionListener { mediaPlayer ->
+            mediaPlayer?.start()
+        }
+        videoView.start()
+
+
+
 //        decibelTextView = findViewById(R.id.dbLevelTextView)
 
 //        if (checkPermission()) {
