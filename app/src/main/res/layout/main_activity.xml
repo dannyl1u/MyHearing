@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/devText"
+        android:text="For demo purpose, each row below is dedicated to each feature we want to demonstrate, complete with a corresponding button to showcase that specific feature."
+        />
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/meterDemo"
+            android:text="Decibel Meter Demo: "
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/demoButton"
+            android:text="Decibel Meter"
+            />
+
+    </LinearLayout>
+
+
+</LinearLayout>
