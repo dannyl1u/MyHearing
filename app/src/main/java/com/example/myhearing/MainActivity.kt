@@ -1,6 +1,9 @@
 package com.example.myhearing
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +16,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.myhearing.ui.theme.MyHearingTheme
 
 class MainActivity : ComponentActivity() {
+    lateinit var dbMeterButton : Button
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+        dbMeterButton = findViewById(R.id.dbDemoButton)
+        dbMeterButton.setOnClickListener{
+//            Toast.makeText(this, " test...", Toast.LENGTH_SHORT).show()
+            val intent : Intent = Intent(this, DecibelMeterDemoActivity::class.java)
+            startActivity(intent)
+        }
 
 //        setContent {
 //            MyHearingTheme {
