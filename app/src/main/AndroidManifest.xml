@@ -32,6 +32,7 @@
             android:name=".DecibelMeterDemoActivity"
             android:exported="true"
             />
+        <activity android:name=".HeatMap"/>
 
     </application>
 

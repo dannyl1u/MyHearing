@@ -58,6 +58,7 @@ package com.example.myhearing
 //}
 
 
+import android.content.Intent
 import android.os.Bundle
 //import android.widget.Toolbar
 import androidx.activity.ComponentActivity
@@ -103,10 +104,14 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {
                     // Handle Item 1 click
+                    val intent : Intent = Intent(this, DecibelMeterDemoActivity::class.java)
+                    startActivity(intent)
                     true
                 }
                 R.id.nav_item2 -> {
                     // Handle Item 2 click
+                    val intent : Intent = Intent(this, HeatMap::class.java)
+                    startActivity(intent)
                     true
                 }
                 else -> false
