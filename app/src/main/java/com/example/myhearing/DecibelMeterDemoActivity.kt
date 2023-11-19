@@ -23,6 +23,12 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.db_demo)
 
+        checkPermission().let {
+            if (!it) {
+                requestPermission()
+            }
+        }
+
         val videoView: VideoView = findViewById(R.id.videoView)
         val videoPath = "android.resource://" + packageName + "/" + R.raw.dbmetervideo
         videoView.setVideoURI(Uri.parse(videoPath))
