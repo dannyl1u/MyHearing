@@ -24,6 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".DecibelMeterActivity"
+            android:theme="@style/Theme.MyHearing">
+        </activity>
     </application>
 
 </manifest>

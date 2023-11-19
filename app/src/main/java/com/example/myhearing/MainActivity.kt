@@ -1,6 +1,8 @@
 package com.example.myhearing
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +30,11 @@ class MainActivity : ComponentActivity() {
 //                }
 //            }
 //        }
+    }
+
+    fun onDMClick(view: View) {
+        val intent = Intent(this, DecibelMeterActivity::class.java)
+        this.startActivity(intent)
     }
 }
 
