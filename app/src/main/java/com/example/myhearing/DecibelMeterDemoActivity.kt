@@ -13,14 +13,15 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlin.math.log10
 
 class DecibelMeterDemoActivity : ComponentActivity() {
 
     private val RECORD_AUDIO_PERMISSION_CODE = 123
     private var audioRecord: AudioRecord? = null
     private lateinit var noiseLevelTextView: TextView
-    private val handler = Handler(Looper.getMainLooper()) // Handler for updating UI
-    private val updateIntervalMillis = 1000L // Update every second
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateIntervalMillis = 1000L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +63,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         )
     }
 
+    // https://developer.android.com/reference/android/media/AudioRecord
     private fun initAudioRecord() {
         val sampleRate = 44100 // Sample rate in Hz
         val channelConfig = AudioFormat.CHANNEL_IN_MONO
@@ -92,11 +94,10 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         val readResult = audioRecord?.read(audioData, 0, bufferSize)
 
         if (readResult != null && readResult != AudioRecord.ERROR_BAD_VALUE) {
-            val maxAmplitude = audioData.max() ?: 0
-            val decibel = 20 * Math.log10(maxAmplitude.toDouble())
+            val maxAmplitude = audioData.max()
+            val decibel = 20 * log10(maxAmplitude.toDouble())
             Log.d("DecibelMeter", "Decibel: $decibel")
             runOnUiThread {
-                // Update UI with decibel level
                 noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
             }
         }
