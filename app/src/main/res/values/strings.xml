@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">MyHearing</string>
+    <string name="app_name">EarDefence Explorer</string>
+    <string name="navigation_drawer_open">Open Drawer</string>
+    <string name="navigation_drawer_close">Close Drawer\n</string>
 </resources>
