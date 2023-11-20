@@ -2,51 +2,50 @@ package com.example.myhearing
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.media.MediaRecorder
-import android.net.Uri
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.MediaRecorder.AudioSource
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.widget.TextView
-import android.widget.VideoView
 import androidx.activity.ComponentActivity
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-//import kotlinx.android.synthetic.main.activity_main.*
-
+import kotlin.math.log10
 
 class DecibelMeterDemoActivity : ComponentActivity() {
 
     private val RECORD_AUDIO_PERMISSION_CODE = 123
-    private var mediaRecorder: MediaRecorder? = null
-    private lateinit var decibelTextView : TextView
+    private var audioRecord: AudioRecord? = null
+    private lateinit var noiseLevelTextView: TextView
+    private val handler = Handler(Looper.getMainLooper())
+    private val updateIntervalMillis = 1000L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.db_demo)
+        setContentView(R.layout.noise_level)
 
-        checkPermission().let {
-            if (!it) {
-                requestPermission()
+        noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
+
+        if (checkPermission()) {
+            initAudioRecord()
+            startSoundCheckRunnable()
+        } else {
+            requestPermission()
+        }
+    }
+
+    private fun startSoundCheckRunnable() {
+        val soundCheckRunnable = object : Runnable {
+            override fun run() {
+                updateDecibelLevel()
+                handler.postDelayed(this, updateIntervalMillis)
             }
         }
 
-        val videoView: VideoView = findViewById(R.id.videoView)
-        val videoPath = "android.resource://" + packageName + "/" + R.raw.dbmetervideo
-        videoView.setVideoURI(Uri.parse(videoPath))
-        // Set an OnCompletionListener to restart the video when it finishes
-        videoView.setOnCompletionListener { mediaPlayer ->
-            mediaPlayer?.start()
-        }
-        videoView.start()
-
-
-
-//        decibelTextView = findViewById(R.id.dbLevelTextView)
-
-//        if (checkPermission()) {
-//            initMediaRecorder()
-//        } else {
-//            requestPermission()
-//        }
+        handler.post(soundCheckRunnable)
     }
 
     private fun checkPermission(): Boolean {
@@ -64,45 +63,49 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         )
     }
 
-    private fun initMediaRecorder() {
-        mediaRecorder = MediaRecorder()
-        mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
-        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-        mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-        mediaRecorder?.setOutputFile("/dev/null")
+    // https://developer.android.com/reference/android/media/AudioRecord
+    private fun initAudioRecord() {
+        val sampleRate = 44100 // Sample rate in Hz
+        val channelConfig = AudioFormat.CHANNEL_IN_MONO
+        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+        val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
 
-        try {
-            mediaRecorder?.prepare()
-            mediaRecorder?.start()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
         }
+        audioRecord = AudioRecord(
+            AudioSource.MIC,
+            sampleRate,
+            channelConfig,
+            audioFormat,
+            bufferSize
+        )
 
-        // Start a thread to update the UI with the decibel level
-        Thread {
-            while (true) {
-                updateDecibelLevel()
-                try {
-                    Thread.sleep(1000) // Update every second
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
-                }
-            }
-        }.start()
+        audioRecord?.startRecording()
     }
 
     private fun updateDecibelLevel() {
-        val amplitude = mediaRecorder?.maxAmplitude ?: 0
-        val decibel = 20 * Math.log10(amplitude.toDouble())
-        runOnUiThread {
-            // Update UI with decibel level (you can replace with your UI logic)
-            decibelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
+        val bufferSize = audioRecord?.bufferSizeInFrames ?: 0
+        val audioData = ShortArray(bufferSize)
+        val readResult = audioRecord?.read(audioData, 0, bufferSize)
+
+        if (readResult != null && readResult != AudioRecord.ERROR_BAD_VALUE) {
+            val maxAmplitude = audioData.max()
+            val decibel = 20 * log10(maxAmplitude.toDouble())
+            Log.d("DecibelMeter", "Decibel: $decibel")
+            runOnUiThread {
+                noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
+            }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaRecorder?.stop()
-        mediaRecorder?.release()
+        audioRecord?.stop()
+        audioRecord?.release()
     }
 }
