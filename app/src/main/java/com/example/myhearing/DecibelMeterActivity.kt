@@ -22,7 +22,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class DecibelMeterActivity : ComponentActivity() {
-    private lateinit var mMediaRecorder: MediaRecorder
+    private var mMediaRecorder: MediaRecorder? = null
     private var recording = false
     private var job: Job? = null
 
@@ -51,8 +51,8 @@ class DecibelMeterActivity : ComponentActivity() {
         super.onPause()
 
         if (recording) {
-            this.mMediaRecorder.stop()
-            this.mMediaRecorder.release()
+            this.mMediaRecorder?.stop()
+            this.mMediaRecorder?.release()
             this.recording = false
         }
 
@@ -86,8 +86,8 @@ class DecibelMeterActivity : ComponentActivity() {
     }
 
     private fun getCurrentDecibelLevel(): Double {
-        val amplitude = mMediaRecorder.maxAmplitude
-        return 20 * kotlin.math.log10(amplitude / 4.0)
+        val amplitude = this.mMediaRecorder?.maxAmplitude
+        return 20 * kotlin.math.log10((amplitude?.div(4.0) ?: 0.0))
     }
 
     private fun startMediaRecorder() {
@@ -98,14 +98,14 @@ class DecibelMeterActivity : ComponentActivity() {
             MediaRecorder()
         }
 
-        this.mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-        this.mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-        this.mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-        this.mMediaRecorder.setOutputFile("${externalCacheDir?.absolutePath}/test.3gp")
+        this.mMediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+        this.mMediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+        this.mMediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+        this.mMediaRecorder?.setOutputFile("${externalCacheDir?.absolutePath}/test.3gp")
 
         try {
-            this.mMediaRecorder.prepare()
-            this.mMediaRecorder.start()
+            this.mMediaRecorder?.prepare()
+            this.mMediaRecorder?.start()
             this.recording = true
         } catch (e: Exception) {
             e.printStackTrace()
