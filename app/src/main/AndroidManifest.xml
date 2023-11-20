@@ -3,6 +3,8 @@
 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 
@@ -32,6 +34,9 @@
             android:name=".DecibelMeterDemoActivity"
             android:exported="true"
             />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
         <activity android:name=".HeatMap"/>
 
     </application>
