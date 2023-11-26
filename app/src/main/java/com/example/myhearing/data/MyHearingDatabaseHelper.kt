@@ -1,4 +1,4 @@
-package com.example.myhearing
+package com.example.myhearing.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -52,5 +52,38 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         statement.executeInsert()
 
         db.close()
+    }
+
+    // SELECT example
+    fun fetchExerciseEntries(context: Context): ArrayList<MyHearingEntry> {
+        val dbHelper = MyHearingDatabaseHelper(context)
+        val db = dbHelper.readableDatabase
+        val query = "SELECT * FROM $TABLE_NAME"
+        val cursor = db.rawQuery(query, null)
+
+        val entryList = ArrayList<MyHearingEntry>()
+
+        while (cursor.moveToNext()) {
+            val entry = MyHearingEntry(
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.ID_COLUMN)),
+                dateTime = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.DATE_TIME_COLUMN)),
+                dbLevel = cursor.getDouble(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.DB_LEVEL_COLUMN)),
+                comment = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.COMMENT_COLUMN)),
+                location = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.LOCATION_COLUMN))
+            )
+            entryList.add(entry)
+        }
+        db.close()
+        return entryList
+    }
+
+    // DELETE example
+    fun deleteEntry(context: Context, entryId: String) {
+        val dbHelper = MyHearingDatabaseHelper(context)
+        val db = dbHelper.writableDatabase
+        val query = "DELETE FROM $TABLE_NAME WHERE id = $entryId"
+
+        val statement = db.compileStatement(query)
+        statement.execute()
     }
 }
