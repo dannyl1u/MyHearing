@@ -7,6 +7,17 @@
     android:layout_height="match_parent"
     tools:context=".TestHearing">
 
+    <TextView
+        android:id="@+id/instructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Press start, listen to the audio, \nthen select the appropriate image."
+        app:layout_constraintBottom_toTopOf="@+id/gridLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="20dp"/>
+
     <GridLayout
         android:id="@+id/gridLayout"
         android:layout_width="300dp"
@@ -22,129 +33,128 @@
 
         <!-- Cell 1 -->
         <ImageView
-            android:id="@+id/imageView1"
+            android:id="@+id/dog"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/dog" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/dog" />
 
         <!-- Cell 2 -->
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/cat"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/cat" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/cat" />
 
         <!-- Cell 3 -->
         <ImageView
-            android:id="@+id/imageView3"
+            android:id="@+id/car"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/car" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/car" />
 
         <!-- Cell 4 -->
         <ImageView
-            android:id="@+id/imageView4"
+            android:id="@+id/king"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/king" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/king" />
 
         <!-- Cell 5 -->
         <ImageView
-            android:id="@+id/imageView5"
+            android:id="@+id/queen"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/queen" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/queen" />
 
         <!-- Cell 6 -->
         <ImageView
-            android:id="@+id/imageView6"
+            android:id="@+id/jar"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/jar" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/jar" />
 
         <!-- Cell 7 -->
         <ImageView
-            android:id="@+id/imageView7"
+            android:id="@+id/frog"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/frog" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/frog" />
 
         <!-- Cell 8 -->
         <ImageView
-            android:id="@+id/imageView8"
+            android:id="@+id/door"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/placeholder_image" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/door" />
 
         <!-- Cell 9 -->
         <ImageView
-            android:id="@+id/imageView9"
+            android:id="@+id/rat"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_gravity="fill"
             android:layout_rowWeight="1"
             android:layout_columnWeight="1"
-            android:layout_gravity="fill"
             android:clickable="true"
             android:onClick="onImageClick"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/placeholder_image" />
+            android:scaleType="fitCenter"
+            android:src="@drawable/rat" />
 
     </GridLayout>
 
-    <!-- Button -->
     <Button
-        android:id="@+id/myButton"
+        android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="StartTest"
+        android:text="Start Test"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

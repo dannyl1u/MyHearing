@@ -44,6 +44,11 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
+                R.id.nav_item3 -> {
+                    val intent = Intent ( this, TestHearing::class.java)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }
