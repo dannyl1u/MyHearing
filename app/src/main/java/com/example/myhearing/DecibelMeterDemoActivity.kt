@@ -34,7 +34,6 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         setContentView(R.layout.noise_level)
 
 
-
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
         setLayoutForCurrentMode()
@@ -131,6 +130,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private enum class Mode {
         NUMBER, GAUGE, GRAPH
     }
+
     private fun setLayoutForCurrentMode() {
         // Set the content view based on the current mode
         when (currentMode) {
@@ -150,13 +150,14 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     }
 
 
-
-
-
-
     override fun onDestroy() {
+        stopSoundCheckRunnable()
         super.onDestroy()
         audioRecord?.stop()
         audioRecord?.release()
+    }
+    // Release AudioRecord to prevent crashing upon finish()
+    private fun stopSoundCheckRunnable() {
+        handler.removeCallbacksAndMessages(null)
     }
 }
