@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_item2 -> {
-                    val intent = Intent(this, HeatMap::class.java)
+                    val intent = Intent(this, HeatmapActivity::class.java)
                     startActivity(intent)
                     true
                 }
