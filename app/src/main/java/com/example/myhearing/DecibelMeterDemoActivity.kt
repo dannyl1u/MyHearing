@@ -204,7 +204,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         statement.bindString(4, locationString)
 
         statement.executeInsert()
-        Log.d("Save Data to Database", "Saved data successfully.")
+        Log.d("Save Data to Database", "Saved data successfully with time = $currentTimeMillis, dbLevel = $dbLevel, location = $locationString.")
         db.close()
     }
 }

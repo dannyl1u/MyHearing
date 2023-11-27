@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -117,7 +116,6 @@ class MainActivity : AppCompatActivity() {
         dataEntries.clear()
 
         records.forEachIndexed { index, pair ->
-            Log.d("updateChartData", "index = ${index.toFloat()}, second = ${pair.second}")
             if (pair.second >= 0) {
                 dataEntries.add(Entry(index.toFloat(), pair.second))
             }
