@@ -2,11 +2,13 @@ package com.example.myhearing
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.widget.Toolbar
+import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -64,6 +66,12 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize chart
         initChart()
+        updateChartData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateChartData()
     }
 
     private fun initChart() {
@@ -95,8 +103,23 @@ class MainActivity : AppCompatActivity() {
         return labels
     }
 
-    fun updateChartData(decibel: Float) {
-        dataEntries.add(Entry(dataEntries.size.toFloat(), decibel))
+    fun updateChartData() {
+        val dbHelper = MyHearingDatabaseHelper(this)
+        val records = dbHelper.getRecentDecibelRecords()
+
+        dataEntries.clear()
+
+        records.forEachIndexed { index, pair ->
+            Log.d("updateChartData", "index = ${index.toFloat()}, second = ${pair.second}")
+            if (pair.second >= 0) {
+                dataEntries.add(Entry(index.toFloat(), pair.second))
+            }
+        }
+
+        val dataSet = LineDataSet(dataEntries, "Decibel Level")
+        chart.data = LineData(dataSet)
+
+        chart.data.notifyDataChanged()
         chart.notifyDataSetChanged()
         chart.invalidate()
     }

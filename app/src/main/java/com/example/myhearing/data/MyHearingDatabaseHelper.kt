@@ -3,16 +3,20 @@ package com.example.myhearing.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-
     companion object {
         const val DATABASE_NAME = "MyHearingDatabase"
         const val DATABASE_VERSION = 1
         const val TABLE_NAME = "MyHearingTable"
 
         const val ID_COLUMN = "id"
-        const val DATE_TIME_COLUMN = "dateTime"
+        const val TIME_COLUMN = "time"
         const val DB_LEVEL_COLUMN = "dbLevel"
         const val COMMENT_COLUMN = "comment"
         const val LOCATION_COLUMN = "location"
@@ -23,7 +27,7 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
     override fun onCreate(db: SQLiteDatabase) {
         val createTableQuery = "CREATE TABLE $TABLE_NAME (" +
                 "$ID_COLUMN INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "$DATE_TIME_COLUMN TEXT," +
+                "$TIME_COLUMN REAL," +
                 "$DB_LEVEL_COLUMN REAL," +
                 "$COMMENT_COLUMN TEXT," +
                 "$LOCATION_COLUMN TEXT)"
@@ -37,14 +41,17 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
     // INSERT example
     fun saveDataToDatabase(context: Context) {
         val insertQuery = "INSERT INTO $TABLE_NAME " +
-                "(dateTime, dbLevel, comment, location) " +
+                "(time, dbLevel, comment, location) " +
                 "VALUES (?, ?, ?, ?)"
         val dbHelper = MyHearingDatabaseHelper(context)
         val db = dbHelper.writableDatabase
         val statement = db.compileStatement(insertQuery)
 
         // We can process data here and bind it to the statement
-        statement.bindString(1, "test date and time")
+        // Fetch Time
+        val currentTimeMillis = System.currentTimeMillis()
+
+        statement.bindLong(1, currentTimeMillis)
         statement.bindDouble(2, 0.0)
         statement.bindString(3, "test comment")
         statement.bindString(4, "test location")
@@ -66,7 +73,7 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         while (cursor.moveToNext()) {
             val entry = MyHearingEntry(
                 id = cursor.getInt(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.ID_COLUMN)),
-                dateTime = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.DATE_TIME_COLUMN)),
+                dateTime = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.TIME_COLUMN)),
                 dbLevel = cursor.getDouble(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.DB_LEVEL_COLUMN)),
                 comment = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.COMMENT_COLUMN)),
                 location = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.LOCATION_COLUMN))
@@ -86,4 +93,27 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
         val statement = db.compileStatement(query)
         statement.execute()
     }
+
+    fun getRecentDecibelRecords(): List<Pair<Long, Float>> {
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?", arrayOf((System.currentTimeMillis() - 600000).toString()))
+        val records = mutableListOf<Pair<Long, Float>>()
+        while (cursor.moveToNext()) {
+            val timeColumnIndex = cursor.getColumnIndex(TIME_COLUMN)
+            var timestamp = 0L
+            var decibel = 0f
+            if (timeColumnIndex != -1) {
+                timestamp = cursor.getLong(timeColumnIndex)
+            }
+            val decibelColumnIndex = cursor.getColumnIndex(DB_LEVEL_COLUMN)
+            if (decibelColumnIndex != -1) {
+                decibel = cursor.getFloat(decibelColumnIndex)
+            }
+            records.add(Pair(timestamp, decibel))
+        }
+        cursor.close()
+        db.close()
+        return records
+    }
+
 }
