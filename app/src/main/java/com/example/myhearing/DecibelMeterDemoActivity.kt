@@ -10,7 +10,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
@@ -28,19 +30,20 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private val updateIntervalMillis = 1000L
 
     private var currentMode = Mode.NUMBER
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.noise_level)
-
 
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
+        Log.d("DecibelMeterDemoActivity", currentMode.toString())
         setLayoutForCurrentMode()
 
         noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
         settingsButton = findViewById(R.id.settingsButton)
         backButton = findViewById(R.id.backButton)
+
 
         backButton.setOnClickListener {
             // Go back to nav drawer
@@ -49,6 +52,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         settingsButton.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         if (checkPermission()) {
@@ -123,6 +127,10 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             Log.d("DecibelMeter", "Decibel: $decibel")
             runOnUiThread {
                 noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
+                val progress = decibel.toInt().coerceIn(0, 100)
+
+                // Update circular ProgressBar progress
+                progressBar.progress = progress
             }
         }
     }
@@ -134,9 +142,21 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private fun setLayoutForCurrentMode() {
         // Set the content view based on the current mode
         when (currentMode) {
-            Mode.NUMBER -> setContentView(R.layout.dbmode_number)
-            Mode.GAUGE -> setContentView(R.layout.dbmode_gauge)
-            Mode.GRAPH -> setContentView(R.layout.dbmode_graph)
+            Mode.NUMBER -> {
+                setContentView(R.layout.dbmode_number)
+                progressBar = findViewById(R.id.progressBar)
+                progressBar.visibility = View.GONE
+            }
+            Mode.GAUGE -> {
+                setContentView(R.layout.dbmode_gauge)
+                progressBar = findViewById(R.id.progressBar)
+                progressBar.visibility = View.VISIBLE
+            }
+            Mode.GRAPH -> {
+                setContentView(R.layout.dbmode_graph)
+                progressBar = findViewById(R.id.progressBar)
+                progressBar.visibility = View.GONE
+            }
         }
     }
 
@@ -148,7 +168,6 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
     }
-
 
     override fun onDestroy() {
         stopSoundCheckRunnable()
