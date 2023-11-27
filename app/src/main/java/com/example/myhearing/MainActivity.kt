@@ -7,21 +7,34 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.widget.Toolbar
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private lateinit var toolbar: Toolbar
+    private lateinit var chart: LineChart
+    private var dataEntries: ArrayList<Entry> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        // Initialize UI components
         drawerLayout = findViewById(R.id.drawerLayout)
         navigationView = findViewById(R.id.navigationView)
         toolbar = findViewById(R.id.toolbar)
+        chart = findViewById(R.id.chart)
         setSupportActionBar(toolbar)
 
+        // Drawer toggle
         val toggle = ActionBarDrawerToggle(
             this,
             drawerLayout,
@@ -32,6 +45,7 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        // Navigation items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {
@@ -47,5 +61,43 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+
+        // Initialize chart
+        initChart()
+    }
+
+    private fun initChart() {
+        val dataSet = LineDataSet(dataEntries, "Decibel Level")
+        val lineData = LineData(dataSet)
+        chart.data = lineData
+
+        val xAxis = chart.xAxis
+        xAxis.valueFormatter = IndexAxisValueFormatter(getXAxisValues())
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false)
+        xAxis.granularity = 1f
+
+        chart.axisLeft.setDrawGridLines(false)
+        chart.axisRight.isEnabled = false
+        chart.description.isEnabled = false
+    }
+
+    private fun getXAxisValues(): ArrayList<String> {
+        val labels = ArrayList<String>()
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+        for (i in 0..9) {
+            calendar.add(Calendar.MINUTE, -1)
+            labels.add(0, dateFormat.format(calendar.time))
+        }
+
+        return labels
+    }
+
+    fun updateChartData(decibel: Float) {
+        dataEntries.add(Entry(dataEntries.size.toFloat(), decibel))
+        chart.notifyDataSetChanged()
+        chart.invalidate()
     }
 }
