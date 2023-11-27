@@ -39,6 +39,10 @@
             android:value="${MAPS_API_KEY}" />
         <activity android:name=".HeatMap"/>
 
+        <activity android:name=".SettingsActivity"
+            android:exported="true"/>
+
+
     </application>
 
 </manifest>

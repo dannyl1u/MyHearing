@@ -2,4 +2,6 @@
     <string name="app_name">EarDefence Explorer</string>
     <string name="navigation_drawer_open">Open Drawer</string>
     <string name="navigation_drawer_close">Close Drawer\n</string>
+    <string name="apply_settings">Apply Settings</string>
+    <string name="select_ui">Select UI:</string>
 </resources>
