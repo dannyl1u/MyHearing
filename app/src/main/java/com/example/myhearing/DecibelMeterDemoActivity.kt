@@ -160,8 +160,8 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        audioRecord?.stop()
-        audioRecord?.release()
+//        audioRecord?.stop()
+//        audioRecord?.release()
     }
 
     private fun saveDataToDatabase(context: Context, dbLevel: Double) {

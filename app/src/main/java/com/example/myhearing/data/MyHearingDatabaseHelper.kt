@@ -96,8 +96,9 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     fun getRecentDecibelRecords(): List<Pair<Long, Float>> {
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?", arrayOf((System.currentTimeMillis() - 600000).toString()))
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?", arrayOf((System.currentTimeMillis() - 20000).toString()))
         val records = mutableListOf<Pair<Long, Float>>()
+
         while (cursor.moveToNext()) {
             val timeColumnIndex = cursor.getColumnIndex(TIME_COLUMN)
             var timestamp = 0L

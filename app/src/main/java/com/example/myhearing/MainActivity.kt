@@ -2,6 +2,8 @@ package com.example.myhearing
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -66,12 +68,17 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize chart
         initChart()
-        updateChartData()
+        chartUpdateHandler.post(chartUpdateRunnable)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        chartUpdateHandler.removeCallbacks(chartUpdateRunnable)
     }
 
     override fun onResume() {
         super.onResume()
-        updateChartData()
+        chartUpdateHandler.post(chartUpdateRunnable)
     }
 
     private fun initChart() {
@@ -122,5 +129,13 @@ class MainActivity : AppCompatActivity() {
         chart.data.notifyDataChanged()
         chart.notifyDataSetChanged()
         chart.invalidate()
+    }
+
+    private val chartUpdateHandler = Handler(Looper.getMainLooper())
+    private val chartUpdateRunnable = object : Runnable {
+        override fun run() {
+            updateChartData()
+            chartUpdateHandler.postDelayed(this, 1000)
+        }
     }
 }
