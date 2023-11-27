@@ -13,6 +13,13 @@
         android:indeterminate="true"
         android:progressDrawable="@drawable/circular_progress_bar"
         android:visibility="visible" />
+    <lecho.lib.hellocharts.view.LineChartView
+        android:id="@+id/lineChart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        />
     <TextView
         android:id="@+id/tvDecibelLevel"
         android:layout_width="wrap_content"

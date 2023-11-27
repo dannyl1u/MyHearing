@@ -17,7 +17,13 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import lecho.lib.hellocharts.model.Axis
+import lecho.lib.hellocharts.model.Line
+import lecho.lib.hellocharts.model.LineChartData
+import lecho.lib.hellocharts.model.PointValue
+import lecho.lib.hellocharts.view.LineChartView
 import kotlin.math.log10
+
 
 class DecibelMeterDemoActivity : ComponentActivity() {
 
@@ -28,7 +34,10 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private lateinit var backButton: Button
     private val handler = Handler(Looper.getMainLooper())
     private val updateIntervalMillis = 1000L
+    private val dataPoints = mutableListOf<PointValue>() // List to store data points
 
+
+    private lateinit var lineChartView: LineChartView
     private var currentMode = Mode.NUMBER
     private lateinit var progressBar: ProgressBar
 
@@ -57,6 +66,11 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
         if (checkPermission()) {
             initAudioRecord()
+
+            //  graph = findViewById(R.id.graph)
+            lineChartView = findViewById(R.id.lineChart)
+            setupLineChart()
+
             startSoundCheckRunnable()
         } else {
             requestPermission()
@@ -131,6 +145,22 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
                 // Update circular ProgressBar progress
                 progressBar.progress = progress
+
+
+                /** @TODO
+                 * update linechartdata from decibel meter
+                 */
+                val lineChartData = lineChartView.lineChartData
+
+                val currentTime = System.currentTimeMillis().toFloat()
+
+                // Log the data point
+                val pointValue = PointValue(currentTime, decibel.toFloat())
+                dataPoints.add(pointValue)
+
+                // Update the chart with all data points
+                updateChart()
+
             }
         }
     }
@@ -146,16 +176,24 @@ class DecibelMeterDemoActivity : ComponentActivity() {
                 setContentView(R.layout.dbmode_number)
                 progressBar = findViewById(R.id.progressBar)
                 progressBar.visibility = View.GONE
+                lineChartView = findViewById(R.id.lineChart)
+                //  setupLineChart()
             }
+
             Mode.GAUGE -> {
                 setContentView(R.layout.dbmode_gauge)
                 progressBar = findViewById(R.id.progressBar)
                 progressBar.visibility = View.VISIBLE
+                lineChartView = findViewById(R.id.lineChart)
+                //        setupLineChart()
             }
+
             Mode.GRAPH -> {
                 setContentView(R.layout.dbmode_graph)
                 progressBar = findViewById(R.id.progressBar)
                 progressBar.visibility = View.GONE
+                lineChartView = findViewById(R.id.lineChart)
+                setupLineChart()
             }
         }
     }
@@ -175,8 +213,70 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         audioRecord?.stop()
         audioRecord?.release()
     }
+
     // Release AudioRecord to prevent crashing upon finish()
     private fun stopSoundCheckRunnable() {
         handler.removeCallbacksAndMessages(null)
     }
+
+    /** @todo
+     * fix linechart setup so that its a horizontal plot, not vertical
+     */
+    private fun setupLineChart() {
+        val line = Line(mutableListOf<PointValue>())
+            .setColor(R.color.black)
+            .setCubic(false) // Set to true if you want smooth curves
+
+        val lines = mutableListOf<Line>()
+        lines.add(line)
+
+        val lineChartData = LineChartData(lines)
+
+        // Customize X-axis
+        val axisX = Axis()
+            .setName("Time")
+            .setHasLines(true)
+            .setHasTiltedLabels(true)
+            .setTextSize(14) // Set the font size for the X-axis labels
+            .setTextColor(R.color.darkGray) // Set the text color for the X-axis labels
+            .setLineColor(R.color.darkGray) // Set the line color for the X-axis
+
+        // Customize Y-axis
+        val axisY = Axis()
+            .setName("Decibel Level")
+            .setHasLines(true)
+            .setMaxLabelChars(5)
+            .setTextSize(14) // Set the font size for the Y-axis labels
+            .setTextColor(R.color.darkGray) // Set the text color for the Y-axis labels
+            .setLineColor(R.color.darkGray) // Set the line color for the Y-axis
+
+        lineChartData.axisXBottom = axisX
+        lineChartData.axisYLeft = axisY
+
+        lineChartView.lineChartData = lineChartData
+
+
+    }
+
+    private fun updateChart() {
+        val lineChartData = LineChartData(listOf(Line(dataPoints).setColor(R.color.black).setCubic(false)))
+
+        // Customize X-axis
+        val axisX = Axis()
+            .setName("Time")
+            .setHasLines(true)
+            .setHasTiltedLabels(true)
+
+        // Customize Y-axis
+        val axisY = Axis()
+            .setName("Decibel Level")
+            .setHasLines(true)
+            .setMaxLabelChars(5)
+
+        lineChartData.axisXBottom = axisX
+        lineChartData.axisYLeft = axisY
+
+        lineChartView.lineChartData = lineChartData
+    }
+
 }
