@@ -35,7 +35,7 @@ class TestHearing : AppCompatActivity() {
                 "Next step for this page:",
                 "1) Test left/right ear separately",
                 "2) Randomized audio and noise level",
-                "3) Clearer audio",
+                "3) Clearer a udio",
                 "4) saving score in database"
             )
             showSequentialSnackbar(devMsg)
