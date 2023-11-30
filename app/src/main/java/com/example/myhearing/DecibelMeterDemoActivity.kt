@@ -17,9 +17,6 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import lecho.lib.hellocharts.model.Axis
-import lecho.lib.hellocharts.model.Line
-import lecho.lib.hellocharts.model.LineChartData
 import lecho.lib.hellocharts.model.PointValue
 import lecho.lib.hellocharts.view.LineChartView
 import kotlin.math.log10
@@ -40,6 +37,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private lateinit var lineChartView: LineChartView
     private var currentMode = Mode.NUMBER
     private lateinit var progressBar: ProgressBar
+    private lateinit var horizontalProgressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,10 +64,6 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
         if (checkPermission()) {
             initAudioRecord()
-
-            //  graph = findViewById(R.id.graph)
-            lineChartView = findViewById(R.id.lineChart)
-            setupLineChart()
 
             startSoundCheckRunnable()
         } else {
@@ -143,30 +137,16 @@ class DecibelMeterDemoActivity : ComponentActivity() {
                 noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
                 val progress = decibel.toInt().coerceIn(0, 100)
 
-                // Update circular ProgressBar progress
+                // Update both ProgressBar's progress
                 progressBar.progress = progress
-
-
-                /** @TODO
-                 * update linechartdata from decibel meter
-                 */
-                val lineChartData = lineChartView.lineChartData
-
-                val currentTime = System.currentTimeMillis().toFloat()
-
-                // Log the data point
-                val pointValue = PointValue(currentTime, decibel.toFloat())
-                dataPoints.add(pointValue)
-
-                // Update the chart with all data points
-                updateChart()
+                horizontalProgressBar.progress = progress
 
             }
         }
     }
 
     private enum class Mode {
-        NUMBER, GAUGE, GRAPH
+        NUMBER, GAUGE, HORIZONTALGAUGE
     }
 
     private fun setLayoutForCurrentMode() {
@@ -175,25 +155,28 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             Mode.NUMBER -> {
                 setContentView(R.layout.dbmode_number)
                 progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+
                 progressBar.visibility = View.GONE
-                lineChartView = findViewById(R.id.lineChart)
-                //  setupLineChart()
+                horizontalProgressBar.visibility = View.GONE
             }
 
             Mode.GAUGE -> {
                 setContentView(R.layout.dbmode_gauge)
                 progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.VISIBLE
-                lineChartView = findViewById(R.id.lineChart)
-                //        setupLineChart()
+                horizontalProgressBar.visibility = View.GONE
+
             }
 
-            Mode.GRAPH -> {
-                setContentView(R.layout.dbmode_graph)
+            Mode.HORIZONTALGAUGE -> {
+                setContentView(R.layout.dbmode_horizontalgauge)
                 progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
-                lineChartView = findViewById(R.id.lineChart)
-                setupLineChart()
+                horizontalProgressBar.visibility = View.VISIBLE
+
             }
         }
     }
@@ -202,7 +185,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         return when (modeString) {
             "Number" -> Mode.NUMBER
             "Gauge" -> Mode.GAUGE
-            "Graph" -> Mode.GRAPH
+            "Horizontal Gauge" -> Mode.HORIZONTALGAUGE
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
     }
@@ -222,61 +205,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     /** @todo
      * fix linechart setup so that its a horizontal plot, not vertical
      */
-    private fun setupLineChart() {
-        val line = Line(mutableListOf<PointValue>())
-            .setColor(R.color.black)
-            .setCubic(false) // Set to true if you want smooth curves
-
-        val lines = mutableListOf<Line>()
-        lines.add(line)
-
-        val lineChartData = LineChartData(lines)
-
-        // Customize X-axis
-        val axisX = Axis()
-            .setName("Time")
-            .setHasLines(true)
-            .setHasTiltedLabels(true)
-            .setTextSize(14) // Set the font size for the X-axis labels
-            .setTextColor(R.color.darkGray) // Set the text color for the X-axis labels
-            .setLineColor(R.color.darkGray) // Set the line color for the X-axis
-
-        // Customize Y-axis
-        val axisY = Axis()
-            .setName("Decibel Level")
-            .setHasLines(true)
-            .setMaxLabelChars(5)
-            .setTextSize(14) // Set the font size for the Y-axis labels
-            .setTextColor(R.color.darkGray) // Set the text color for the Y-axis labels
-            .setLineColor(R.color.darkGray) // Set the line color for the Y-axis
-
-        lineChartData.axisXBottom = axisX
-        lineChartData.axisYLeft = axisY
-
-        lineChartView.lineChartData = lineChartData
 
 
-    }
-
-    private fun updateChart() {
-        val lineChartData = LineChartData(listOf(Line(dataPoints).setColor(R.color.black).setCubic(false)))
-
-        // Customize X-axis
-        val axisX = Axis()
-            .setName("Time")
-            .setHasLines(true)
-            .setHasTiltedLabels(true)
-
-        // Customize Y-axis
-        val axisY = Axis()
-            .setName("Decibel Level")
-            .setHasLines(true)
-            .setMaxLabelChars(5)
-
-        lineChartData.axisXBottom = axisX
-        lineChartData.axisYLeft = axisY
-
-        lineChartView.lineChartData = lineChartData
-    }
 
 }

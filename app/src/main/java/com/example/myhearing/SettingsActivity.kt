@@ -21,7 +21,7 @@ class SettingsActivity : AppCompatActivity() {
         applySettingsButton = findViewById(R.id.applyButton)
 
         // Use spinner to determine UI
-        val modeOptions = arrayOf("Number", "Gauge", "Graph")
+        val modeOptions = arrayOf("Number", "Gauge", "Horizontal Gauge")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modeOptions)
         modeSpinner.adapter = adapter
 
@@ -35,7 +35,7 @@ class SettingsActivity : AppCompatActivity() {
 
 
         // Save via SharedPreferences
-        val sharedPreferences = getSharedPreferences("Settings", 0) // Use 0 instead of Context.MODE_PRIVATE
+        val sharedPreferences = getSharedPreferences("Settings", 0)
         val editor = sharedPreferences.edit()
         editor.putString("selectedMode", selectedMode)
         editor.apply()
