@@ -20,6 +20,11 @@ class TestHearing : AppCompatActivity() {
 
     private lateinit var audioIDList: MutableList<Int>
 
+    val allAudioResources = listOf(
+        R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
+        R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_hearing)
@@ -27,34 +32,24 @@ class TestHearing : AppCompatActivity() {
         DevNoteButton = findViewById(R.id.devNote)
 
         StartButton.setOnClickListener {
-//            if (mediaPlayer.isPlaying) {
-//                // If MediaPlayer is playing, stop and reset it
-//                mediaPlayer.stop()
-//                mediaPlayer.reset()
-//            }
 
-            // Create and start the MediaPlayer
-            playAudioSequence(R.raw.queen, R.raw.car, R.raw.king)
+            val randomAudioResources = getRandomAudioResources(allAudioResources, 3)
+
+            playAudioSequence(*randomAudioResources.toIntArray())
 
         }
-
-        // Initialize MediaPlayer outside of the setOnClickListener block
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
 
 
-        DevNoteButton.setOnClickListener {
-            val devMsg = listOf(
-                "Next step for this page:",
-                "1) Test left/right ear separately",
-                "2) Randomized audio and noise level",
-                "3) Clearer audio",
-                "4) saving score in database"
-            )
-            showSequentialSnackbar(devMsg)
-        }
-
-
     }
+
+    fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
+        require(count <= audioList.size) { "Count should be less than or equal to the size of the audio list." }
+
+        val shuffledList = audioList.shuffled()
+        return shuffledList.subList(0, count)
+    }
+
     private fun playAudioSequence(vararg audioResources: Int) {
         var mediaPlayer: MediaPlayer? = null
 
@@ -74,25 +69,6 @@ class TestHearing : AppCompatActivity() {
 
         playNextAudio(0)
     }
-
-
-
-
-
-
-
-
-//    private fun playAudio(audioResource: Int) {
-////        playAudio(audioIDList[0])
-////        if (mediaPlayer.isPlaying) {
-////            when (audioResource) {
-////                audioIDList[0] -> playAudio(audioIDList[1])
-////                audioIDList[1] -> playAudio(audioIDList[2])
-////                audioIDList[2] -> {}
-////            }
-////        }
-//    }
-
 
 
     fun onImageClick(view: View) {
