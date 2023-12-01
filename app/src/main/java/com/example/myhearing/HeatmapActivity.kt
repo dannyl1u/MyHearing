@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -42,7 +43,7 @@ import kotlin.random.Random
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
-        const val MAX_DB_INTENSITY = 85.0
+        const val MAX_DB_INTENSITY = 100.0
         const val LOCATION_UPDATE_INTERVAL_MS = 1000L
         const val DEFAULT_LOCATION_PATTERN = "#.#######"
         const val GRID_ROWS = 80
@@ -235,9 +236,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getNewDbIntensity(): Double {
-        val dbLevels = arrayOf(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+        val dbLevels = arrayOf(10, 20, 30, 40, 50, 60, 70, 80, 85)
         val randIndex = Random(System.currentTimeMillis()).nextInt(dbLevels.size)
         val randDbIntensity = dbLevels[randIndex]
+
+//        Log.e("new intensity", (randDbIntensity.toDouble() / MAX_DB_INTENSITY).toString())
 
         return randDbIntensity.toDouble() / MAX_DB_INTENSITY
     }
@@ -278,6 +281,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
         }
 
+        Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
+
         return averagedHeatmapData
     }
 
@@ -288,11 +293,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .weightedData(averagedHeatmapData)
                 .gradient(
                     Gradient(
-                        intArrayOf(Color.GREEN, Color.YELLOW, Color.RED),
-                        floatArrayOf(0.6f, 0.75f, 0.85f)
+                        intArrayOf(Color.GREEN, Color.RED),
+                        floatArrayOf(0.4f, 1f)
                     )
                 )
-                .maxIntensity(1.0)
+                .maxIntensity(2.0)
                 .radius(50)
                 .build()
 
