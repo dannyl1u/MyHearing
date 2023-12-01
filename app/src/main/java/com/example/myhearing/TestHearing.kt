@@ -29,6 +29,8 @@ class TestHearing : AppCompatActivity() {
     )
     val noiseLevelList = listOf(0.2f, 0.8f, 1.5f, 0.2f, 0.8f, 1.5f)
     private var noiseIndex = 0
+    val sideCounter = listOf("left", "left", "left", "right", "right", "right")
+    private var sideIndex = 0
 
     private lateinit var overlay: View
     private lateinit var enableButton: Button
@@ -52,7 +54,11 @@ class TestHearing : AppCompatActivity() {
         setContentView(R.layout.test_hearing)
         StartButton = findViewById(R.id.startButton)
         overlayCover = findViewById(R.id.overlay)
-
+        overlayCover.bringToFront()
+        overlayCover.visibility = View.VISIBLE
+        overlayCover.isClickable = true
+        overlayCover.isFocusable = true
+        overlayCover.bringToFront()
 
         randomAudioResources = listOf() // init here, otherwise will crash
 
@@ -60,6 +66,7 @@ class TestHearing : AppCompatActivity() {
             audioAndNoise("left")
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
+        noisePlayer = MediaPlayer.create(this,R.raw.noise5)
 
 
     }
@@ -77,11 +84,13 @@ class TestHearing : AppCompatActivity() {
         overlayCover.isClickable = true
         overlayCover.isFocusable = true
         overlayCover.bringToFront()
-        showToast("Noise Level: ${noiseLevelList[noiseIndex]}")
+
+//        showToast("Noise Level: ${noiseLevelList[noiseIndex]}")
         randomAudioResources = getRandomAudioResources(allAudioResources, 3)
-        playAudioSequence(*randomAudioResources.toIntArray())
-        playNoise(noiseLevelList[noiseIndex], side)
+        playAudioSequence(sideCounter[sideIndex], *randomAudioResources.toIntArray())
+        playNoise(noiseLevelList[noiseIndex], sideCounter[sideIndex])
         noiseIndex++
+        sideIndex++
 
     }
     fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
@@ -90,13 +99,19 @@ class TestHearing : AppCompatActivity() {
         val shuffledList = audioList.shuffled()
         return shuffledList.subList(0, count)
     }
-    private fun playAudioSequence(vararg audioResources: Int) {
+    private fun playAudioSequence(side : String, vararg audioResources: Int ) {
         var mediaPlayer: MediaPlayer? = null
 
         fun playNextAudio(index: Int) {
             if (index < audioResources.size) {
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(resources.openRawResourceFd(audioResources[index]))
+                    if (side == "left") {
+                        setVolume(1.0f, 0.0f)
+                    } else {
+                        setVolume(0.0f, 1.0f)
+                    }
+
                     setOnCompletionListener { playNextAudio(index + 1) }
                     prepare()
                     start()
@@ -110,7 +125,13 @@ class TestHearing : AppCompatActivity() {
         playNextAudio(0)
     }
     private fun playNoise(fl: Float, side: String) {
+        if (noisePlayer.isPlaying) {
+            noisePlayer.stop()
+            noisePlayer.release()
+        }
+
         val noisePlayer = MediaPlayer.create(this, R.raw.noise5)
+
         if (side == "left") {
             // left ear
             noisePlayer.setVolume(fl, 0.0f)
@@ -123,7 +144,6 @@ class TestHearing : AppCompatActivity() {
             // finished playing a audio
             // remove overlayCover
             overlayCover.visibility = View.GONE
-
             mediaPlayer.release()
         }
         // start audio
@@ -240,6 +260,7 @@ class TestHearing : AppCompatActivity() {
 
         // Release the MediaPlayer resources when the activity is destroyed
         mediaPlayer.release()
+        noisePlayer?.stop()
         noisePlayer.release()
     }
 
