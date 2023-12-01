@@ -15,7 +15,10 @@ class TestHearing : AppCompatActivity() {
     private lateinit var DevNoteButton : Button
 
     private lateinit var mediaPlayer: MediaPlayer
+
     private val clickedImageIds = mutableListOf<String>()
+
+    private lateinit var audioIDList: MutableList<Int>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,19 +26,28 @@ class TestHearing : AppCompatActivity() {
         StartButton = findViewById(R.id.startButton)
         DevNoteButton = findViewById(R.id.devNote)
 
-        // Initialize MediaPlayer
-        mediaPlayer = MediaPlayer()
-
         StartButton.setOnClickListener {
-            // Play the audio files in sequence
-            playAudio(R.raw.queen)
+            if (mediaPlayer.isPlaying) {
+                // If MediaPlayer is playing, stop and reset it
+                mediaPlayer.stop()
+                mediaPlayer.reset()
+            }
+
+            // Create and start the MediaPlayer
+            mediaPlayer = MediaPlayer.create(this, R.raw.cat)
+            mediaPlayer.start()
         }
+
+        // Initialize MediaPlayer outside of the setOnClickListener block
+        mediaPlayer = MediaPlayer.create(this, R.raw.cat)
+
+
         DevNoteButton.setOnClickListener {
             val devMsg = listOf(
                 "Next step for this page:",
                 "1) Test left/right ear separately",
                 "2) Randomized audio and noise level",
-                "3) Clearer a udio",
+                "3) Clearer audio",
                 "4) saving score in database"
             )
             showSequentialSnackbar(devMsg)
@@ -43,30 +55,29 @@ class TestHearing : AppCompatActivity() {
 
 
     }
-    private fun playAudio(audioResource: Int) {
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.stop()
-            mediaPlayer.reset()
-        }
-
-        mediaPlayer = MediaPlayer.create(this, audioResource)
-
-        mediaPlayer.setOnCompletionListener {
-            // This listener is called when the audio playback is complete
-            // You can add logic here to play the next audio file in sequence
-            when (audioResource) {
-                R.raw.queen -> playAudio(R.raw.rat)
-                R.raw.rat -> playAudio(R.raw.jar)
-                R.raw.jar -> {
-                    // This is the last audio file in the sequence
-                    // Add any additional logic or actions here
-//                    showToast("")
-                }
-            }
-        }
-
+    private fun playRandomAudio() {
+//        val audioResources = listOf(
+//            R.raw.car, R.raw.cat, R.raw.dog, R.raw.door, R.raw.frog,
+//            R.raw.jar, R.raw.king, R.raw.queen, R.raw.rat
+//        )
+        mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         mediaPlayer.start()
+//
     }
+
+    private fun playAudio(audioResource: Int) {
+//        playAudio(audioIDList[0])
+//        if (mediaPlayer.isPlaying) {
+//            when (audioResource) {
+//                audioIDList[0] -> playAudio(audioIDList[1])
+//                audioIDList[1] -> playAudio(audioIDList[2])
+//                audioIDList[2] -> {}
+//            }
+//        }
+    }
+
+
+
     fun onImageClick(view: View) {
         // Check which image was clicked based on its ID
         when (view.id) {
@@ -120,4 +131,12 @@ class TestHearing : AppCompatActivity() {
             }, index * 3000L) // Delay between messages (adjust as needed)
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // Release the MediaPlayer resources when the activity is destroyed
+        mediaPlayer.release()
+    }
+
 }
