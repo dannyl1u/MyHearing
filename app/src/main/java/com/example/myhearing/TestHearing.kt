@@ -9,6 +9,9 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class TestHearing : AppCompatActivity() {
     private lateinit var StartButton : Button
@@ -16,6 +19,7 @@ class TestHearing : AppCompatActivity() {
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var noisePlayer: MediaPlayer
+    private lateinit var randomAudioResources: List<Int>
 
     private val clickedImageIds = mutableListOf<String>()
 
@@ -23,31 +27,31 @@ class TestHearing : AppCompatActivity() {
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
+    val noiseLevelList = listOf(0.2f, 0.6f, 1.0f)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_hearing)
         StartButton = findViewById(R.id.startButton)
-        DevNoteButton = findViewById(R.id.devNote)
 
         StartButton.setOnClickListener {
-
-            val randomAudioResources = getRandomAudioResources(allAudioResources, 3)
+//            for (i in 1..3) {
+            randomAudioResources = getRandomAudioResources(allAudioResources, 3)
+            println(">>> random audio res: $randomAudioResources")
             playAudioSequence(*randomAudioResources.toIntArray())
-            playNoise()
+            playNoise(noiseLevelList[0])
 
+//            }
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
 
 
     }
-    private fun playNoise() {
+    private fun playNoise(fl: Float) {
         val noisePlayer = MediaPlayer.create(this, R.raw.noise)
+        noisePlayer.setVolume(fl,0.0f)
         noisePlayer.start()
-//        noisePlayer.setOnCompletionListener {
-//            // You might want to handle completion, e.g., restart noise or release resources
-//        }
-//        noisePlayer.start()
+
     }
 
     fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
@@ -81,38 +85,54 @@ class TestHearing : AppCompatActivity() {
     fun onImageClick(view: View) {
         // Check which image was clicked based on its ID
         when (view.id) {
-            R.id.dog -> handleImageClick("dog")
-            R.id.cat -> handleImageClick("cat")
-            R.id.car -> handleImageClick("car")
-            R.id.king -> handleImageClick("king")
-            R.id.queen -> handleImageClick("queen")
-            R.id.jar -> handleImageClick("jar")
-            R.id.frog -> handleImageClick("frog")
-            R.id.door -> handleImageClick("door")
-            R.id.rat -> handleImageClick("rat")
+            R.id.dog -> handleImageClick("dog", R.raw.dog)
+            R.id.cat -> handleImageClick("cat", R.raw.cat)
+            R.id.car -> handleImageClick("car", R.raw.car)
+            R.id.king -> handleImageClick("king", R.raw.king)
+            R.id.queen -> handleImageClick("queen", R.raw.queen)
+            R.id.jar -> handleImageClick("jar", R.raw.jar)
+            R.id.frog -> handleImageClick("frog", R.raw.frog)
+            R.id.door -> handleImageClick("door", R.raw.door)
+            R.id.rat -> handleImageClick("rat", R.raw.rat)
         }
     }
-
-    private fun handleImageClick(answer: String) {
-//        showToast("Selected: $answer")
+    private fun handleImageClick(answer: String, audioResource: Int) {
+        // Do something with the answer and audio resource ID
         clickedImageIds.add(answer)
+
         // Change the background of the clicked ImageView
         val resourceId = resources.getIdentifier(answer, "id", packageName)
         findViewById<ImageView>(resourceId)?.setBackgroundResource(R.drawable.selected_background)
 
-
         if (clickedImageIds.size == 3) {
-            // check answer
-            if (clickedImageIds[0] == "queen" && clickedImageIds[1]=="rat" && clickedImageIds[2]=="jar") {
+            // Check if the selected audio resources match the user clicks
+            val selectedAudioResources = clickedImageIds.map { getAudioResourceForAnswer(it) }
+            if (selectedAudioResources == randomAudioResources) {
                 showToast("3/3 correct!")
             } else {
-                showToast("incorrect answer.")
+                showToast("Incorrect answer.")
             }
             clickedImageIds.clear()
         }
-
     }
 // queen > cat > king > rat > frog > door > jar > dog > car
+
+    private fun getAudioResourceForAnswer(answer: String): Int {
+        return when (answer) {
+            "dog" -> R.raw.dog
+            "cat" -> R.raw.cat
+            "car" -> R.raw.car
+            "king" -> R.raw.king
+            "queen" -> R.raw.queen
+            "jar" -> R.raw.jar
+            "frog" -> R.raw.frog
+            "door" -> R.raw.door
+            "rat" -> R.raw.rat
+            else -> 0 // Handle other cases if needed
+        }
+    }
+
+
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
