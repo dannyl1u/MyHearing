@@ -18,6 +18,20 @@
         app:layout_constraintTop_toTopOf="parent"
         android:textSize="20dp"/>
 
+
+    <FrameLayout
+        android:id="@+id/overlay"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_gravity="center"
+        android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <GridLayout
         android:id="@+id/gridLayout"
         android:layout_width="300dp"

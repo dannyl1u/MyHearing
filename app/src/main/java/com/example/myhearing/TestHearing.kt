@@ -5,13 +5,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class TestHearing : AppCompatActivity() {
     private lateinit var StartButton : Button
@@ -28,14 +27,34 @@ class TestHearing : AppCompatActivity() {
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
-    val noiseLevelList = listOf(0.2f, 1.0f, 1.5f, 0.2f, 1.0f, 1.5f)
+    val noiseLevelList = listOf(0.2f, 0.8f, 1.5f, 0.2f, 0.8f, 1.5f)
     private var noiseIndex = 0
+
+    private lateinit var overlay: View
+    private lateinit var enableButton: Button
+    private lateinit var gridView: GridView
+
+    private lateinit var dogIV : ImageView
+    private lateinit var catIV : ImageView
+    private lateinit var carIV : ImageView
+    private lateinit var kingIV : ImageView
+    private lateinit var queenIV : ImageView
+    private lateinit var jarIV : ImageView
+    private lateinit var frogIV : ImageView
+    private lateinit var doorIV : ImageView
+    private lateinit var ratIV : ImageView
+
+    private lateinit var overlayCover : FrameLayout
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_hearing)
         StartButton = findViewById(R.id.startButton)
-        randomAudioResources = listOf()
+        overlayCover = findViewById(R.id.overlay)
+
+
+        randomAudioResources = listOf() // init here, otherwise will crash
 
         StartButton.setOnClickListener {
             audioAndNoise("left")
@@ -44,11 +63,21 @@ class TestHearing : AppCompatActivity() {
 
 
     }
+
+
+
     private fun audioAndNoise(side: String) {
         if (noiseIndex>=6) {
             showToast(" test ends ")
             return
         }
+        // Re-instate layoutcover
+        overlayCover.bringToFront()
+        overlayCover.visibility = View.VISIBLE
+        overlayCover.isClickable = true
+        overlayCover.isFocusable = true
+        overlayCover.bringToFront()
+        showToast("Noise Level: ${noiseLevelList[noiseIndex]}")
         randomAudioResources = getRandomAudioResources(allAudioResources, 3)
         playAudioSequence(*randomAudioResources.toIntArray())
         playNoise(noiseLevelList[noiseIndex], side)
@@ -80,18 +109,27 @@ class TestHearing : AppCompatActivity() {
 
         playNextAudio(0)
     }
-    private fun playNoise(fl: Float, side :String) {
-        val noisePlayer = MediaPlayer.create(this, R.raw.noise)
+    private fun playNoise(fl: Float, side: String) {
+        val noisePlayer = MediaPlayer.create(this, R.raw.noise5)
         if (side == "left") {
             // left ear
-            noisePlayer.setVolume(fl,0.0f)
+            noisePlayer.setVolume(fl, 0.0f)
         } else {
             // right ear
-            noisePlayer.setVolume(0.0f,fl)
+            noisePlayer.setVolume(0.0f, fl)
         }
-        noisePlayer.start()
 
+        noisePlayer.setOnCompletionListener { mediaPlayer ->
+            // finished playing a audio
+            // remove overlayCover
+            overlayCover.visibility = View.GONE
+
+            mediaPlayer.release()
+        }
+        // start audio
+        noisePlayer.start()
     }
+
 
 
 
@@ -131,11 +169,19 @@ class TestHearing : AppCompatActivity() {
             // Check if the selected audio resources match the user clicks
             val selectedAudioResources = clickedImageIds.map { getAudioResourceForAnswer(it) }
             if (selectedAudioResources == randomAudioResources) {
-                showToast("3/3 correct!")
+//                showToast("3/3 correct!")
             } else {
                 showToast("Incorrect answer.")
             }
             clickedImageIds.clear()
+            // Re-instate layoutcover
+            overlayCover.bringToFront()
+            overlayCover.visibility = View.VISIBLE
+            overlayCover.isClickable = true
+            overlayCover.isFocusable = true
+            overlayCover.bringToFront()
+
+
             println(">>>> about to test iteration")
             if (testIteration in 3..5){
                 // left ear finish. right ear start
