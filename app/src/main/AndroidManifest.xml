@@ -43,6 +43,10 @@
 
         <activity android:name=".TestHearing" />
 
+        <activity android:name=".SettingsActivity"
+            android:exported="true"/>
+
+
     </application>
 
 </manifest>
