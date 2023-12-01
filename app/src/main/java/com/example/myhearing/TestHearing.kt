@@ -15,10 +15,9 @@ class TestHearing : AppCompatActivity() {
     private lateinit var DevNoteButton : Button
 
     private lateinit var mediaPlayer: MediaPlayer
+    private lateinit var noisePlayer: MediaPlayer
 
     private val clickedImageIds = mutableListOf<String>()
-
-    private lateinit var audioIDList: MutableList<Int>
 
     val allAudioResources = listOf(
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
@@ -34,13 +33,21 @@ class TestHearing : AppCompatActivity() {
         StartButton.setOnClickListener {
 
             val randomAudioResources = getRandomAudioResources(allAudioResources, 3)
-
             playAudioSequence(*randomAudioResources.toIntArray())
+            playNoise()
 
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
 
 
+    }
+    private fun playNoise() {
+        val noisePlayer = MediaPlayer.create(this, R.raw.noise)
+        noisePlayer.start()
+//        noisePlayer.setOnCompletionListener {
+//            // You might want to handle completion, e.g., restart noise or release resources
+//        }
+//        noisePlayer.start()
     }
 
     fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
@@ -130,6 +137,7 @@ class TestHearing : AppCompatActivity() {
 
         // Release the MediaPlayer resources when the activity is destroyed
         mediaPlayer.release()
+        noisePlayer.release()
     }
 
 }
