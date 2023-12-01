@@ -27,15 +27,15 @@ class TestHearing : AppCompatActivity() {
         DevNoteButton = findViewById(R.id.devNote)
 
         StartButton.setOnClickListener {
-            if (mediaPlayer.isPlaying) {
-                // If MediaPlayer is playing, stop and reset it
-                mediaPlayer.stop()
-                mediaPlayer.reset()
-            }
+//            if (mediaPlayer.isPlaying) {
+//                // If MediaPlayer is playing, stop and reset it
+//                mediaPlayer.stop()
+//                mediaPlayer.reset()
+//            }
 
             // Create and start the MediaPlayer
-            mediaPlayer = MediaPlayer.create(this, R.raw.cat)
-            mediaPlayer.start()
+            playAudioSequence(R.raw.queen, R.raw.car, R.raw.king)
+
         }
 
         // Initialize MediaPlayer outside of the setOnClickListener block
@@ -55,26 +55,43 @@ class TestHearing : AppCompatActivity() {
 
 
     }
-    private fun playRandomAudio() {
-//        val audioResources = listOf(
-//            R.raw.car, R.raw.cat, R.raw.dog, R.raw.door, R.raw.frog,
-//            R.raw.jar, R.raw.king, R.raw.queen, R.raw.rat
-//        )
-        mediaPlayer = MediaPlayer.create(this, R.raw.cat)
-        mediaPlayer.start()
-//
+    private fun playAudioSequence(vararg audioResources: Int) {
+        var mediaPlayer: MediaPlayer? = null
+
+        fun playNextAudio(index: Int) {
+            if (index < audioResources.size) {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(resources.openRawResourceFd(audioResources[index]))
+                    setOnCompletionListener { playNextAudio(index + 1) }
+                    prepare()
+                    start()
+                }
+            } else {
+                // Release the last MediaPlayer when all audios are played
+                mediaPlayer?.release()
+            }
+        }
+
+        playNextAudio(0)
     }
 
-    private fun playAudio(audioResource: Int) {
-//        playAudio(audioIDList[0])
-//        if (mediaPlayer.isPlaying) {
-//            when (audioResource) {
-//                audioIDList[0] -> playAudio(audioIDList[1])
-//                audioIDList[1] -> playAudio(audioIDList[2])
-//                audioIDList[2] -> {}
-//            }
-//        }
-    }
+
+
+
+
+
+
+
+//    private fun playAudio(audioResource: Int) {
+////        playAudio(audioIDList[0])
+////        if (mediaPlayer.isPlaying) {
+////            when (audioResource) {
+////                audioIDList[0] -> playAudio(audioIDList[1])
+////                audioIDList[1] -> playAudio(audioIDList[2])
+////                audioIDList[2] -> {}
+////            }
+////        }
+//    }
 
 
 
