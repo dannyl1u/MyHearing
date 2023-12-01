@@ -173,10 +173,10 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val bgLocationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (!isGranted) {
-                launchBgLocationDialog()
-            } else {
+            if (isGranted) {
                 initMap()
+            } else {
+                launchBgLocationDialog()
             }
         }
 
