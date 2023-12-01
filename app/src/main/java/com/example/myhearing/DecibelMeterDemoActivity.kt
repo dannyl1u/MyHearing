@@ -17,8 +17,6 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import lecho.lib.hellocharts.model.PointValue
-import lecho.lib.hellocharts.view.LineChartView
 import kotlin.math.log10
 
 
@@ -31,10 +29,8 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private lateinit var backButton: Button
     private val handler = Handler(Looper.getMainLooper())
     private val updateIntervalMillis = 1000L
-    private val dataPoints = mutableListOf<PointValue>() // List to store data points
 
 
-    private lateinit var lineChartView: LineChartView
     private var currentMode = Mode.NUMBER
     private lateinit var progressBar: ProgressBar
     private lateinit var horizontalProgressBar: ProgressBar
