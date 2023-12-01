@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.GridView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
@@ -15,6 +16,8 @@ import com.google.android.material.snackbar.Snackbar
 class TestHearing : AppCompatActivity() {
     private lateinit var StartButton : Button
     private lateinit var DevNoteButton : Button
+    private lateinit var leftEar : ImageView
+    private lateinit var rightEar : ImageView
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var noisePlayer: MediaPlayer
@@ -32,8 +35,11 @@ class TestHearing : AppCompatActivity() {
     val sideCounter = listOf("left", "left", "left", "right", "right", "right")
     private var sideIndex = 0
 
-    private var leftScore = 0
-    private var rightScore = 0
+    private var leftScore : Int = 0
+    private var rightScore : Int = 0
+    private lateinit var leftScoreTV : TextView
+    private lateinit var rightScoreTV : TextView
+
 
     private lateinit var overlayCover : FrameLayout
 
@@ -42,6 +48,11 @@ class TestHearing : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_hearing)
         StartButton = findViewById(R.id.startButton)
+        leftEar = findViewById(R.id.leftear)
+        rightEar = findViewById(R.id.rightear)
+        leftScoreTV = findViewById(R.id.leftScore)
+        rightScoreTV = findViewById(R.id.rightScore)
+
         overlayCover = findViewById(R.id.overlay)
         overlayCover.bringToFront()
         overlayCover.visibility = View.VISIBLE
@@ -66,6 +77,8 @@ class TestHearing : AppCompatActivity() {
     private fun audioAndNoise(side: String) {
         if (noiseIndex>=6) {
             showToast(" test ends ")
+            leftEar.alpha = 0.2f
+            rightEar.alpha = 0.2f
             return
         }
         // Re-instate layoutcover
@@ -75,7 +88,6 @@ class TestHearing : AppCompatActivity() {
         overlayCover.isFocusable = true
         overlayCover.bringToFront()
 
-//        showToast("Noise Level: ${noiseLevelList[noiseIndex]}")
         randomAudioResources = getRandomAudioResources(allAudioResources, 3)
         playAudioSequence(sideCounter[sideIndex], *randomAudioResources.toIntArray())
         playNoise(noiseLevelList[noiseIndex], sideCounter[sideIndex])
@@ -115,13 +127,17 @@ class TestHearing : AppCompatActivity() {
         playNextAudio(0)
     }
     private fun playNoise(fl: Float, side: String) {
-//        if (noisePlayer.isPlaying) {
-//            noisePlayer.stop()
-//            noisePlayer.release()
-//        }
-//
-//        val noisePlayer = MediaPlayer.create(this, R.raw.noise5)
-        showToast(" noise side: $side")
+        if (side=="left") {
+            leftEar.alpha = 1f
+            rightEar.alpha = 0.2f
+        } else if (side == "right") {
+            rightEar.alpha = 1f
+            leftEar.alpha = 0.2f
+        } else {
+            leftEar.alpha = 0.2f
+            rightEar.alpha = 0.2f
+        }
+
         var noisePlayer: MediaPlayer? = null
         noisePlayer = MediaPlayer().apply {
             setDataSource(resources.openRawResourceFd(R.raw.noise5_1))
@@ -194,10 +210,14 @@ class TestHearing : AppCompatActivity() {
 //            showToast("$correctCount/3 correct!")
             if ( sideIndex==0  || sideIndex==1 || sideIndex==2 || sideIndex==3) {
                 leftScore += correctCount
-                showToast("Left: $leftScore/9")
+//                showToast("Left: $leftScore/9")
+                val tempScore = (leftScore*100/9).toInt()
+                leftScoreTV.text = "$leftScore/9✅"
             } else {
                 rightScore += correctCount
-                showToast("Right: $rightScore/9")
+//                showToast("Right: $rightScore/9")
+                val tempScore = (rightScore*100/9).toInt()
+                rightScoreTV.text = "$rightScore/9✅"
             }
             clickedImageIds.clear()
             // Re-instate layoutcover
@@ -208,16 +228,13 @@ class TestHearing : AppCompatActivity() {
             overlayCover.bringToFront()
 
 
-            println(">>>> about to test iteration")
             if (testIteration in 3..5){
                 // left ear finish. right ear start
-                println(">>> about to run RIGHT")
                 audioAndNoise("right")
             } else if (testIteration<3) {
                 // still left ear.
                 audioAndNoise("left")
                 testIteration++
-                println(">>>> left side finished once")
             } else {
                 // end of test
                 showToast("end of test")
