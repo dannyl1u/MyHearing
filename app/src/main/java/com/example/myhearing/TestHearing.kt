@@ -22,45 +22,45 @@ class TestHearing : AppCompatActivity() {
     private lateinit var randomAudioResources: List<Int>
 
     private val clickedImageIds = mutableListOf<String>()
+    private var testIteration = 0
 
     val allAudioResources = listOf(
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
-    val noiseLevelList = listOf(0.2f, 0.6f, 1.0f)
+    val noiseLevelList = listOf(0.2f, 1.0f, 1.5f, 0.2f, 1.0f, 1.5f)
+    private var noiseIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.test_hearing)
         StartButton = findViewById(R.id.startButton)
+        randomAudioResources = listOf()
 
         StartButton.setOnClickListener {
-//            for (i in 1..3) {
-            randomAudioResources = getRandomAudioResources(allAudioResources, 3)
-            println(">>> random audio res: $randomAudioResources")
-            playAudioSequence(*randomAudioResources.toIntArray())
-            playNoise(noiseLevelList[0])
-
-//            }
+            audioAndNoise("left")
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
 
 
     }
-    private fun playNoise(fl: Float) {
-        val noisePlayer = MediaPlayer.create(this, R.raw.noise)
-        noisePlayer.setVolume(fl,0.0f)
-        noisePlayer.start()
+    private fun audioAndNoise(side: String) {
+        if (noiseIndex>=6) {
+            showToast(" test ends ")
+            return
+        }
+        randomAudioResources = getRandomAudioResources(allAudioResources, 3)
+        playAudioSequence(*randomAudioResources.toIntArray())
+        playNoise(noiseLevelList[noiseIndex], side)
+        noiseIndex++
 
     }
-
     fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
         require(count <= audioList.size) { "Count should be less than or equal to the size of the audio list." }
 
         val shuffledList = audioList.shuffled()
         return shuffledList.subList(0, count)
     }
-
     private fun playAudioSequence(vararg audioResources: Int) {
         var mediaPlayer: MediaPlayer? = null
 
@@ -80,22 +80,45 @@ class TestHearing : AppCompatActivity() {
 
         playNextAudio(0)
     }
+    private fun playNoise(fl: Float, side :String) {
+        val noisePlayer = MediaPlayer.create(this, R.raw.noise)
+        if (side == "left") {
+            // left ear
+            noisePlayer.setVolume(fl,0.0f)
+        } else {
+            // right ear
+            noisePlayer.setVolume(0.0f,fl)
+        }
+        noisePlayer.start()
+
+    }
+
+
+
+
 
 
     fun onImageClick(view: View) {
-        // Check which image was clicked based on its ID
-        when (view.id) {
-            R.id.dog -> handleImageClick("dog", R.raw.dog)
-            R.id.cat -> handleImageClick("cat", R.raw.cat)
-            R.id.car -> handleImageClick("car", R.raw.car)
-            R.id.king -> handleImageClick("king", R.raw.king)
-            R.id.queen -> handleImageClick("queen", R.raw.queen)
-            R.id.jar -> handleImageClick("jar", R.raw.jar)
-            R.id.frog -> handleImageClick("frog", R.raw.frog)
-            R.id.door -> handleImageClick("door", R.raw.door)
-            R.id.rat -> handleImageClick("rat", R.raw.rat)
+        if (randomAudioResources.isNotEmpty()) {
+            println("<<< there IS random audio")
+            // Check which image was clicked based on its ID
+            when (view.id) {
+                R.id.dog -> handleImageClick("dog", R.raw.dog)
+                R.id.cat -> handleImageClick("cat", R.raw.cat)
+                R.id.car -> handleImageClick("car", R.raw.car)
+                R.id.king -> handleImageClick("king", R.raw.king)
+                R.id.queen -> handleImageClick("queen", R.raw.queen)
+                R.id.jar -> handleImageClick("jar", R.raw.jar)
+                R.id.frog -> handleImageClick("frog", R.raw.frog)
+                R.id.door -> handleImageClick("door", R.raw.door)
+                R.id.rat -> handleImageClick("rat", R.raw.rat)
+            }
+        } else {
+            println("<<<<< no random audio yet")
         }
     }
+
+
     private fun handleImageClick(answer: String, audioResource: Int) {
         // Do something with the answer and audio resource ID
         clickedImageIds.add(answer)
@@ -113,6 +136,20 @@ class TestHearing : AppCompatActivity() {
                 showToast("Incorrect answer.")
             }
             clickedImageIds.clear()
+            println(">>>> about to test iteration")
+            if (testIteration in 3..5){
+                // left ear finish. right ear start
+                println(">>> about to run RIGHT")
+                audioAndNoise("right")
+            } else if (testIteration<3) {
+                // still left ear.
+                audioAndNoise("left")
+                testIteration++
+                println(">>>> left side finished once")
+            } else {
+                // end of test
+                showToast("end of test")
+            }
         }
     }
 // queen > cat > king > rat > frog > door > jar > dog > car
