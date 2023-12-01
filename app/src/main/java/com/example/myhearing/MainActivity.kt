@@ -49,6 +49,11 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
+                R.id.nav_item4 -> {
+                    val intent = Intent ( this, CalibrationActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }

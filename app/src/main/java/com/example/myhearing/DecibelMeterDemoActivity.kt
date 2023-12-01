@@ -1,6 +1,7 @@
 package com.example.myhearing
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
@@ -127,8 +128,13 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
         if (readResult != null && readResult != AudioRecord.ERROR_BAD_VALUE) {
             val maxAmplitude = audioData.max()
-            val decibel = 20 * log10(maxAmplitude.toDouble())
+
+            val prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
+            val calibrationFactor = prefs.getFloat("calibration_factor", 1f)
+
+            val decibel = 20 * log10(maxAmplitude.toDouble() * calibrationFactor)
             Log.d("DecibelMeter", "Decibel: $decibel")
+            Log.d("DecibelMeter", "Calibration Factor: $calibrationFactor")
             runOnUiThread {
                 noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
                 val progress = decibel.toInt().coerceIn(0, 100)
