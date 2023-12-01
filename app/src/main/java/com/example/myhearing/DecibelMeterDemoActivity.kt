@@ -136,7 +136,6 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             runOnUiThread {
                 noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
                 val progress = decibel.toInt().coerceIn(0, 100)
-
                 // Update both ProgressBar's progress
                 progressBar.progress = progress
                 horizontalProgressBar.progress = progress
@@ -201,11 +200,5 @@ class DecibelMeterDemoActivity : ComponentActivity() {
     private fun stopSoundCheckRunnable() {
         handler.removeCallbacksAndMessages(null)
     }
-
-    /** @todo
-     * fix linechart setup so that its a horizontal plot, not vertical
-     */
-
-
 
 }

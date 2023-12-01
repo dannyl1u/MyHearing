@@ -46,8 +46,6 @@ class SettingsActivity : AppCompatActivity() {
 
         startActivity(intent)
 
-
-        // Close the SettingsActivity
         finish()
     }
 }
