@@ -207,7 +207,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun initMap() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
 
