@@ -29,6 +29,7 @@
             android:name=".DecibelMeterActivity"
             android:theme="@style/Theme.MyHearing">
         </activity>
+        
     </application>
 
 </manifest>
