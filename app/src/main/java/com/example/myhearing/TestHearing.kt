@@ -27,24 +27,13 @@ class TestHearing : AppCompatActivity() {
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
-    val noiseLevelList = listOf(0.2f, 0.8f, 1.5f, 0.2f, 0.8f, 1.5f)
+    val noiseLevelList = listOf(0.05f, 0.5f, 0.7f, 0.05f, 0.5f, 0.7f)
     private var noiseIndex = 0
     val sideCounter = listOf("left", "left", "left", "right", "right", "right")
     private var sideIndex = 0
 
-    private lateinit var overlay: View
-    private lateinit var enableButton: Button
-    private lateinit var gridView: GridView
-
-    private lateinit var dogIV : ImageView
-    private lateinit var catIV : ImageView
-    private lateinit var carIV : ImageView
-    private lateinit var kingIV : ImageView
-    private lateinit var queenIV : ImageView
-    private lateinit var jarIV : ImageView
-    private lateinit var frogIV : ImageView
-    private lateinit var doorIV : ImageView
-    private lateinit var ratIV : ImageView
+    private var leftScore = 0
+    private var rightScore = 0
 
     private lateinit var overlayCover : FrameLayout
 
@@ -62,11 +51,12 @@ class TestHearing : AppCompatActivity() {
 
         randomAudioResources = listOf() // init here, otherwise will crash
 
+
         StartButton.setOnClickListener {
             audioAndNoise("left")
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
-        noisePlayer = MediaPlayer.create(this,R.raw.noise5)
+        noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
 
 
     }
@@ -125,20 +115,28 @@ class TestHearing : AppCompatActivity() {
         playNextAudio(0)
     }
     private fun playNoise(fl: Float, side: String) {
-        if (noisePlayer.isPlaying) {
-            noisePlayer.stop()
-            noisePlayer.release()
+//        if (noisePlayer.isPlaying) {
+//            noisePlayer.stop()
+//            noisePlayer.release()
+//        }
+//
+//        val noisePlayer = MediaPlayer.create(this, R.raw.noise5)
+        showToast(" noise side: $side")
+        var noisePlayer: MediaPlayer? = null
+        noisePlayer = MediaPlayer().apply {
+            setDataSource(resources.openRawResourceFd(R.raw.noise5_1))
+
+            if (side == "left") {
+                // left ear
+                setVolume(fl, 0.0f)
+            } else {
+                // right ear
+                setVolume(0.0f, fl)
+            }
+            prepare()
+            start()
         }
 
-        val noisePlayer = MediaPlayer.create(this, R.raw.noise5)
-
-        if (side == "left") {
-            // left ear
-            noisePlayer.setVolume(fl, 0.0f)
-        } else {
-            // right ear
-            noisePlayer.setVolume(0.0f, fl)
-        }
 
         noisePlayer.setOnCompletionListener { mediaPlayer ->
             // finished playing a audio
@@ -149,6 +147,9 @@ class TestHearing : AppCompatActivity() {
         // start audio
         noisePlayer.start()
     }
+
+
+
 
 
 
@@ -186,12 +187,17 @@ class TestHearing : AppCompatActivity() {
         findViewById<ImageView>(resourceId)?.setBackgroundResource(R.drawable.selected_background)
 
         if (clickedImageIds.size == 3) {
-            // Check if the selected audio resources match the user clicks
+            // check user selection, give score
             val selectedAudioResources = clickedImageIds.map { getAudioResourceForAnswer(it) }
-            if (selectedAudioResources == randomAudioResources) {
-//                showToast("3/3 correct!")
+            val correctCount = selectedAudioResources.count { it in randomAudioResources }
+
+//            showToast("$correctCount/3 correct!")
+            if ( sideIndex==0  || sideIndex==1 || sideIndex==2 || sideIndex==3) {
+                leftScore += correctCount
+                showToast("Left: $leftScore/9")
             } else {
-                showToast("Incorrect answer.")
+                rightScore += correctCount
+                showToast("Right: $rightScore/9")
             }
             clickedImageIds.clear()
             // Re-instate layoutcover
