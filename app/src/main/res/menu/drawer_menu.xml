@@ -9,7 +9,7 @@
         android:title="DB Meter" />
     <item
         android:id="@+id/nav_item2"
-        android:title="Heap Map" />
+        android:title="Heatmap" />
     <!-- Add more items as needed -->
     <item
         android:id="@+id/nav_item3"
