@@ -77,8 +77,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
-
-        // Make a frag popup to suggest wearing ear phone
+        // a frag pop up to suggest ear phones.
         val headphoneFragment = EarPhoneFragment()
         headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
 
@@ -88,7 +87,6 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
     private fun audioAndNoise(side: String) {
         if (noiseIndex>=6) {
-//            showToast(" test ends ")
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
             val leftScorePercent = leftScore*100/9
@@ -97,7 +95,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
             return
         }
-        // Re-instate layoutcover
+        // Re-instate layoutcover: to cover up GridView to prevent clicks during audio
         overlayCover.bringToFront()
         overlayCover.visibility = View.VISIBLE
         overlayCover.isClickable = true
@@ -125,9 +123,9 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                 mediaPlayer = MediaPlayer().apply {
                     setDataSource(resources.openRawResourceFd(audioResources[index]))
                     if (side == "left") {
-                        setVolume(1.0f, 0.0f)
+                        setVolume(1.0f, 0.0f) // 100% on left ear. 0% on right
                     } else {
-                        setVolume(0.0f, 1.0f)
+                        setVolume(0.0f, 1.0f) // 0% on left ear, 100% on right
                     }
 
                     setOnCompletionListener { playNextAudio(index + 1) }
@@ -135,7 +133,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                     start()
                 }
             } else {
-                // Release the last MediaPlayer when all audios are played
+                // release player when finished all audio.
                 mediaPlayer?.release()
             }
         }
@@ -211,7 +209,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
 
     private fun handleImageClick(answer: String, audioResource: Int) {
-        // Do something with the answer and audio resource ID
+        // Do something with the answerr and audio resource ID
         clickedImageIds.add(answer)
 
         // Change the background of the clicked ImageView
@@ -223,15 +221,12 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             val selectedAudioResources = clickedImageIds.map { getAudioResourceForAnswer(it) }
             val correctCount = selectedAudioResources.count { it in randomAudioResources }
 
-//            showToast("$correctCount/3 correct!")
             if ( sideIndex==0  || sideIndex==1 || sideIndex==2 || sideIndex==3) {
                 leftScore += correctCount
-//                showToast("Left: $leftScore/9")
                 val tempScore = (leftScore*100/9).toInt()
                 leftScoreTV.text = "$leftScore/9 correct"
             } else {
                 rightScore += correctCount
-//                showToast("Right: $rightScore/9")
                 val tempScore = (rightScore*100/9).toInt()
                 rightScoreTV.text = "$rightScore/9 correct"
             }
@@ -253,7 +248,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                 testIteration++
             } else {
                 // end of test
-                showToast("end of test")
+//                showToast("end of test")
             }
         }
     }

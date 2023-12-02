@@ -46,7 +46,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Cell 1 -->
         <ImageView
             android:id="@+id/dog"
             android:layout_width="0dp"
@@ -59,7 +58,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/dog" />
 
-        <!-- Cell 2 -->
         <ImageView
             android:id="@+id/cat"
             android:layout_width="0dp"
@@ -72,7 +70,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/cat" />
 
-        <!-- Cell 3 -->
         <ImageView
             android:id="@+id/car"
             android:layout_width="0dp"
@@ -85,7 +82,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/car" />
 
-        <!-- Cell 4 -->
         <ImageView
             android:id="@+id/king"
             android:layout_width="0dp"
@@ -98,7 +94,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/king" />
 
-        <!-- Cell 5 -->
         <ImageView
             android:id="@+id/queen"
             android:layout_width="0dp"
@@ -111,7 +106,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/queen" />
 
-        <!-- Cell 6 -->
         <ImageView
             android:id="@+id/jar"
             android:layout_width="0dp"
@@ -124,7 +118,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/jar" />
 
-        <!-- Cell 7 -->
         <ImageView
             android:id="@+id/frog"
             android:layout_width="0dp"
@@ -137,7 +130,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/frog" />
 
-        <!-- Cell 8 -->
         <ImageView
             android:id="@+id/door"
             android:layout_width="0dp"
@@ -150,7 +142,6 @@
             android:scaleType="fitCenter"
             android:src="@drawable/door" />
 
-        <!-- Cell 9 -->
         <ImageView
             android:id="@+id/rat"
             android:layout_width="0dp"
