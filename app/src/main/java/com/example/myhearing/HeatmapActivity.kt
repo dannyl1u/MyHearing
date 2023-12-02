@@ -17,6 +17,8 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -34,6 +36,7 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
@@ -53,13 +56,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         const val MAX_DB_INTENSITY = 100.0
         const val LOCATION_UPDATE_INTERVAL_MS = 1000L
         const val DEFAULT_LOCATION_PATTERN = "#.#######"
-        const val GRID_ROWS = 50
-        const val GRID_COLS = 30
-        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.RED)
-        val GRADIENT_START_POINTS = floatArrayOf(0.4f, 1f)
+        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
+        val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
         const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 50
-        const val DEFAULT_ZOOM_LEVEL = 21f
+        const val PROVIDER_RADIUS = 35
+        const val DEFAULT_ZOOM_LEVEL = 18f
     }
 
     private lateinit var binding: ActivityHeatmapBinding
@@ -76,6 +77,12 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var audioRecord: AudioRecord? = null
     private val handler = Handler(Looper.getMainLooper())
     private var decibel = 0.0
+
+    private var gridRows = 0
+    private var gridCols = 0
+
+    private lateinit var lastLatLng: LatLng
+    private var lastLatLngInit = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,6 +109,12 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (!fgLocationPermissionsGranted) {
             return
         }
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
+        val mapView = mapFragment.requireView()
+
+        gridRows = (mapView.height / 50.0).toInt()
+        gridCols = (mapView.width / 50.0).toInt()
 
         mMap = googleMap
 
@@ -251,7 +264,14 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
         }
 
-        refreshHeatmap(newLatLng, getAveragedHeatmapData())
+        lastLatLng = newLatLng
+
+        if (!lastLatLngInit) {
+            startRefreshHeatmapRunnable()
+            lastLatLngInit = true
+        }
+
+//        refreshHeatmap(newLatLng, getAveragedHeatmapData())
     }
 
     private fun getNewDbIntensity(): Double {
@@ -262,6 +282,9 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 //        Log.e("new intensity", (randDbIntensity.toDouble() / MAX_DB_INTENSITY).toString())
 
 //        return randDbIntensity.toDouble() / MAX_DB_INTENSITY
+        findViewById<TextView>(R.id.heatmap_tvDecibelLevel).text = "Decibel Level: ${decibel.toInt()}"
+        val zoomLevel = mMap.cameraPosition.zoom
+        findViewById<TextView>(R.id.heatmap_tvZoomLevel).text = "Zoom Level: $zoomLevel"
         return decibel / MAX_DB_INTENSITY
     }
 
@@ -270,8 +293,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         val maxLatLng = visibleRegionBounds.northeast
         val minLatLng = visibleRegionBounds.southwest
 
-        val cellSizeLat = (maxLatLng.latitude - minLatLng.latitude) / GRID_ROWS
-        val cellSizeLng = (maxLatLng.longitude - minLatLng.longitude) / GRID_COLS
+        val cellSizeLat = (maxLatLng.latitude - minLatLng.latitude) / gridRows
+        val cellSizeLng = (maxLatLng.longitude - minLatLng.longitude) / gridCols
 
         val cellIntensityMap: MutableMap<Pair<Int, Int>, ArrayList<Double>> = mutableMapOf()
 
@@ -306,7 +329,18 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         return averagedHeatmapData
     }
 
-    private fun refreshHeatmap(newLatLng: LatLng, averagedHeatmapData: ArrayList<WeightedLatLng>) {
+    private fun startRefreshHeatmapRunnable() {
+        val refreshHeatmapRunnable = object : Runnable {
+            override fun run() {
+                refreshHeatmap(getAveragedHeatmapData())
+                handler.postDelayed(this, 500L)
+            }
+        }
+
+        handler.post(refreshHeatmapRunnable)
+    }
+
+    private fun refreshHeatmap(averagedHeatmapData: ArrayList<WeightedLatLng>) {
         if (!providerBuilt) {
             provider = HeatmapTileProvider.Builder()
                 .weightedData(averagedHeatmapData)
@@ -322,10 +356,10 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         mMap.clear()
         mMap.addTileOverlay(TileOverlayOptions().tileProvider(provider))
-        mMap.addMarker(MarkerOptions().position(newLatLng).title("Current Location"))
+        mMap.addMarker(MarkerOptions().position(lastLatLng).title("Current Location"))
 
         if (!mapCentred) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(newLatLng, DEFAULT_ZOOM_LEVEL))
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastLatLng, DEFAULT_ZOOM_LEVEL))
             mapCentred = true
         }
     }
@@ -386,7 +420,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (readResult != null && readResult != AudioRecord.ERROR_BAD_VALUE) {
             val maxAmplitude = audioData.max()
             decibel = 20 * log10(maxAmplitude.toDouble() * 0.25)
-            Log.e("DecibelMeter", "Decibel: $decibel")
+//            Log.e("DecibelMeter", "Decibel: $decibel")
         }
     }
 
