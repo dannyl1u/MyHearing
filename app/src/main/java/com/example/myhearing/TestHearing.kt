@@ -3,7 +3,9 @@ package com.example.myhearing
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.GridView
@@ -11,11 +13,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import com.google.android.material.snackbar.Snackbar
 
-class TestHearing : AppCompatActivity() {
+class TestHearing : AppCompatActivity(), GoodJobFragment.OnOkButtonClickListener {
     private lateinit var StartButton : Button
-    private lateinit var DevNoteButton : Button
     private lateinit var leftEar : ImageView
     private lateinit var rightEar : ImageView
 
@@ -30,7 +32,7 @@ class TestHearing : AppCompatActivity() {
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
-    val noiseLevelList = listOf(0.05f, 0.5f, 0.7f, 0.05f, 0.5f, 0.7f)
+    val noiseLevelList = listOf(0.05f, 0.3f, 0.7f, 0.05f, 0.3f, 0.7f)
     private var noiseIndex = 0
     val sideCounter = listOf("left", "left", "left", "right", "right", "right")
     private var sideIndex = 0
@@ -64,7 +66,8 @@ class TestHearing : AppCompatActivity() {
 
 
         StartButton.setOnClickListener {
-            audioAndNoise("left")
+            showGoodJobFragment(leftScore,rightScore)
+//            audioAndNoise("left")
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
@@ -79,6 +82,10 @@ class TestHearing : AppCompatActivity() {
             showToast(" test ends ")
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
+            val leftScorePercent = leftScore*100/9
+            val rightScorePercent = rightScore*100/9
+            showGoodJobFragment(leftScorePercent,rightScorePercent)
+
             return
         }
         // Re-instate layoutcover
@@ -212,12 +219,12 @@ class TestHearing : AppCompatActivity() {
                 leftScore += correctCount
 //                showToast("Left: $leftScore/9")
                 val tempScore = (leftScore*100/9).toInt()
-                leftScoreTV.text = "$leftScore/9✅"
+                leftScoreTV.text = "$leftScore/9 correct"
             } else {
                 rightScore += correctCount
 //                showToast("Right: $rightScore/9")
                 val tempScore = (rightScore*100/9).toInt()
-                rightScoreTV.text = "$rightScore/9✅"
+                rightScoreTV.text = "$rightScore/9 correct"
             }
             clickedImageIds.clear()
             // Re-instate layoutcover
@@ -287,4 +294,52 @@ class TestHearing : AppCompatActivity() {
         noisePlayer.release()
     }
 
+    override fun onOkButtonClick() {
+        finish()
+    }
+    private fun showGoodJobFragment(leftScore: Int, rightScore: Int) {
+        val goodJobFragment = GoodJobFragment()
+        val args = Bundle().apply {
+            putInt("leftScore", leftScore)
+            putInt("rightScore", rightScore)
+        }
+
+        goodJobFragment.arguments = args
+        goodJobFragment.onOkButtonClickListener = this
+        goodJobFragment.show(supportFragmentManager, "GoodJobFragmentTag")
+    }
 }
+
+class GoodJobFragment : DialogFragment() {
+    interface OnOkButtonClickListener {
+        fun onOkButtonClick()
+    }
+
+    var onOkButtonClickListener: OnOkButtonClickListener? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_test_end, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val leftScore = arguments?.getInt("leftScore", 0 ) ?:0
+        val rightScore = arguments?.getInt("rightScore", 0)?:0
+        val leftEarTV:TextView = view.findViewById(R.id.leftEar)
+        val rightEarTV:TextView = view.findViewById(R.id.rightEar)
+
+        leftEarTV.text = "Left Ear:\n$leftScore%"
+        rightEarTV.text = "Right Ear:\n$rightScore%"
+
+        // Access the Button through the 'view' parameter
+        val okButton: Button = view.findViewById(R.id.okButton)
+        okButton.setOnClickListener {
+            onOkButtonClickListener?.onOkButtonClick()
+            dismiss()
+        }
+    }
+}
+
