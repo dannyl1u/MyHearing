@@ -14,6 +14,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 //import androidx.compose.ui.graphics.Color
 import android.graphics.Color
+import android.net.Uri
+import android.view.View.GONE
+import android.widget.MediaController
+import android.widget.VideoView
 
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.snackbar.Snackbar
@@ -69,6 +73,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         StartButton.setOnClickListener {
             audioAndNoise("left")
+            StartButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
@@ -83,7 +88,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
     private fun audioAndNoise(side: String) {
         if (noiseIndex>=6) {
-            showToast(" test ends ")
+//            showToast(" test ends ")
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
             val leftScorePercent = leftScore*100/9
@@ -378,6 +383,18 @@ class EarPhoneFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Set up the VideoView
+        val videoView: VideoView = view.findViewById(R.id.earPhoneVideo)
+        val videoPath = "android.resource://" + requireContext().packageName + "/" + R.raw.earphone
+        videoView.setVideoURI(Uri.parse(videoPath))
+        val mediaController = MediaController(requireContext())
+        mediaController.setAnchorView(videoView)
+        videoView.setMediaController(mediaController)
+
+        // Start playing the video
+        videoView.start()
+
         val okButton : Button = view.findViewById(R.id.okButton)
         okButton.setOnClickListener {
             dismiss()
