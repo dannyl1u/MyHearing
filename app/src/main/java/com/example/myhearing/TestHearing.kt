@@ -8,15 +8,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
-import android.widget.GridView
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+//import androidx.compose.ui.graphics.Color
+import android.graphics.Color
+
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.snackbar.Snackbar
 
-class TestHearing : AppCompatActivity(), GoodJobFragment.OnOkButtonClickListener {
+class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
     private lateinit var StartButton : Button
     private lateinit var leftEar : ImageView
     private lateinit var rightEar : ImageView
@@ -66,12 +68,14 @@ class TestHearing : AppCompatActivity(), GoodJobFragment.OnOkButtonClickListener
 
 
         StartButton.setOnClickListener {
-            showGoodJobFragment(leftScore,rightScore)
-//            audioAndNoise("left")
+            audioAndNoise("left")
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
 
+        // Make a frag popup to suggest wearing ear phone
+        val headphoneFragment = EarPhoneFragment()
+        headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
 
     }
 
@@ -84,7 +88,7 @@ class TestHearing : AppCompatActivity(), GoodJobFragment.OnOkButtonClickListener
             rightEar.alpha = 0.2f
             val leftScorePercent = leftScore*100/9
             val rightScorePercent = rightScore*100/9
-            showGoodJobFragment(leftScorePercent,rightScorePercent)
+            showResultFragment(leftScorePercent,rightScorePercent)
 
             return
         }
@@ -297,20 +301,20 @@ class TestHearing : AppCompatActivity(), GoodJobFragment.OnOkButtonClickListener
     override fun onOkButtonClick() {
         finish()
     }
-    private fun showGoodJobFragment(leftScore: Int, rightScore: Int) {
-        val goodJobFragment = GoodJobFragment()
+    private fun showResultFragment(leftScore: Int, rightScore: Int) {
+        val resultFragment = ResultFragment()
         val args = Bundle().apply {
             putInt("leftScore", leftScore)
             putInt("rightScore", rightScore)
         }
 
-        goodJobFragment.arguments = args
-        goodJobFragment.onOkButtonClickListener = this
-        goodJobFragment.show(supportFragmentManager, "GoodJobFragmentTag")
+        resultFragment.arguments = args
+        resultFragment.onOkButtonClickListener = this
+        resultFragment.show(supportFragmentManager, "ResultFragmentTag")
     }
 }
 
-class GoodJobFragment : DialogFragment() {
+class ResultFragment : DialogFragment() {
     interface OnOkButtonClickListener {
         fun onOkButtonClick()
     }
@@ -330,14 +334,52 @@ class GoodJobFragment : DialogFragment() {
         val rightScore = arguments?.getInt("rightScore", 0)?:0
         val leftEarTV:TextView = view.findViewById(R.id.leftEar)
         val rightEarTV:TextView = view.findViewById(R.id.rightEar)
+        val overallTV : TextView = view.findViewById(R.id.overallResult)
 
         leftEarTV.text = "Left Ear:\n$leftScore%"
         rightEarTV.text = "Right Ear:\n$rightScore%"
+
+        var overallScore = (leftScore+rightScore)/2
+        if (overallScore >= 66.66) {
+            // Green: pretty good
+            overallTV.text = "Overall:$overallScore%\nPretty Good!"
+            overallTV.setTextColor(Color.parseColor("#00bf10")) //green
+        } else if (overallScore >= 44.44) {
+            // Orange : could use improvement
+            overallTV.text = "Overall:$overallScore%\nTake care of your ears!"
+            overallTV.setTextColor(Color.parseColor("#e38800")) //orange
+        } else {
+            // Red : HORRIBLE
+            overallTV.text = "Overall:$overallScore%\nSee a doctor."
+            overallTV.setTextColor(Color.parseColor("#bf1506")) //red
+        }
+
 
         // Access the Button through the 'view' parameter
         val okButton: Button = view.findViewById(R.id.okButton)
         okButton.setOnClickListener {
             onOkButtonClickListener?.onOkButtonClick()
+            dismiss()
+        }
+    }
+}
+
+
+
+
+class EarPhoneFragment : DialogFragment() {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_earphone, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val okButton : Button = view.findViewById(R.id.okButton)
+        okButton.setOnClickListener {
             dismiss()
         }
     }
