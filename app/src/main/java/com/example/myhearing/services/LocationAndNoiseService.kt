@@ -1,15 +1,20 @@
 package com.example.myhearing
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -27,6 +32,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.log10
 
 class LocationAndNoiseService : Service(), CoroutineScope {
 
@@ -36,6 +42,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     private var lastLatitude: Double? = null
     private var lastLongitude: Double? = null
     private var lastNoiseLevel: Int? = null
+
+    private var audioRecord: AudioRecord? = null
+    private val sampleRate = 44100
+    private val channelConfig = AudioFormat.CHANNEL_IN_MONO
+    private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
 
 
     private val serviceJob = Job()
@@ -66,7 +77,31 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+
+        initAudioRecord()
     }
+
+    private fun initAudioRecord() {
+        val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        audioRecord = AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            sampleRate,
+            channelConfig,
+            audioFormat,
+            bufferSize
+        )
+
+        audioRecord?.startRecording()
+    }
+
 
 
     override fun onDestroy() {
@@ -122,29 +157,17 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     }
 
 
-    private suspend fun trackNoiseLevel() {
-        val recorder = MediaRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-            setOutputFile(getExternalFilesDir(null)?.absolutePath + "/test.3gp")        }
+    private fun trackNoiseLevel() {
+        val bufferSize = audioRecord?.bufferSizeInFrames ?: 0
+        val audioData = ShortArray(bufferSize)
+        val readResult = audioRecord?.read(audioData, 0, bufferSize)
 
-        try {
-            recorder.prepare()
-            recorder.start()
+        if (readResult != null && readResult > 0) {
+            val maxAmplitude = audioData.maxOrNull() ?: 0
+            val decibel = 20 * log10(maxAmplitude.toDouble())
+            lastNoiseLevel = decibel.toInt()
 
-            delay(1000) // delay for 1 second to get max amplitude
-
-            val amplitude = recorder.maxAmplitude
-            lastNoiseLevel = amplitude
-            Log.d("NoiseTracking", "Amplitude: $amplitude")
-
-            recorder.stop()
-            recorder.release()
-        } catch (e: IOException) {
-            Log.e("NoiseTracking", "Error in recording audio", e)
-        } catch (e: SecurityException) {
-            Log.e("NoiseTracking", "Audio recording permission not granted", e)
+            Log.d("NoiseTracking", "Decibel: $decibel")
         }
     }
 
