@@ -2,6 +2,7 @@ package com.example.myhearing
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -10,6 +11,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
@@ -21,28 +25,56 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.log10
 
+
 class DecibelMeterDemoActivity : ComponentActivity() {
 
     private var audioRecord: AudioRecord? = null
     private lateinit var noiseLevelTextView: TextView
+    private lateinit var settingsButton: Button
+    private lateinit var backButton: Button
     private val handler = Handler(Looper.getMainLooper())
     private val updateIntervalMillis = 1000L
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var locationString: String = ""
+
+
+    private var currentMode = Mode.NUMBER
+    private lateinit var progressBar: ProgressBar
+    private lateinit var horizontalProgressBar: ProgressBar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.noise_level)
+
+        val intentMode = intent.getStringExtra("selectedMode")
+        currentMode = convertStringToMode(intentMode ?: "Number")
+        Log.d("DecibelMeterDemoActivity", currentMode.toString())
+        setLayoutForCurrentMode()
 
         noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
+        settingsButton = findViewById(R.id.settingsButton)
+        backButton = findViewById(R.id.backButton)
+
+
+        backButton.setOnClickListener {
+            // Go back to nav drawer
+            finish()
+        }
+        settingsButton.setOnClickListener {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         if (checkPermission()) {
             initAudioRecord()
+
             startSoundCheckRunnable()
         } else {
             requestPermission()
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
     }
 
     private fun startSoundCheckRunnable() {
@@ -154,11 +186,63 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
             if (decibel >= 0) {
                 saveDataToDatabase(this, decibel)
+                noiseLevelTextView.text = "Decibel Level: ${decibel.toInt()} dB"
+                val progress = decibel.toInt().coerceIn(0, 100)
+                // Update both ProgressBar's progress
+                progressBar.progress = progress
+                horizontalProgressBar.progress = progress
+
             }
         }
     }
 
+    private enum class Mode {
+        NUMBER, GAUGE, HORIZONTALGAUGE
+    }
+
+    private fun setLayoutForCurrentMode() {
+        // Set the content view based on the current mode
+        when (currentMode) {
+            Mode.NUMBER -> {
+                setContentView(R.layout.dbmode_number)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+
+                progressBar.visibility = View.GONE
+                horizontalProgressBar.visibility = View.GONE
+            }
+
+            Mode.GAUGE -> {
+                setContentView(R.layout.dbmode_gauge)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+                progressBar.visibility = View.VISIBLE
+                horizontalProgressBar.visibility = View.GONE
+
+            }
+
+            Mode.HORIZONTALGAUGE -> {
+                setContentView(R.layout.dbmode_horizontalgauge)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+                progressBar.visibility = View.GONE
+                horizontalProgressBar.visibility = View.VISIBLE
+
+            }
+        }
+    }
+
+    private fun convertStringToMode(modeString: String): Mode {
+        return when (modeString) {
+            "Number" -> Mode.NUMBER
+            "Gauge" -> Mode.GAUGE
+            "Horizontal Gauge" -> Mode.HORIZONTALGAUGE
+            else -> throw IllegalArgumentException("Invalid mode: $modeString")
+        }
+    }
+
     override fun onDestroy() {
+//        stopSoundCheckRunnable()
         super.onDestroy()
 //        audioRecord?.stop()
 //        audioRecord?.release()
@@ -207,4 +291,10 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         Log.d("Save Data to Database", "Saved data successfully with time = $currentTimeMillis, dbLevel = $dbLevel, location = $locationString.")
         db.close()
     }
+
+    // Release AudioRecord to prevent crashing upon finish()
+    private fun stopSoundCheckRunnable() {
+        handler.removeCallbacksAndMessages(null)
+    }
+
 }
