@@ -80,6 +80,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:17.0.0")
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("org.json:json:20201115")
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0")
+
 }
 
 secrets {

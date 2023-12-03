@@ -16,6 +16,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -28,7 +29,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
@@ -130,10 +130,21 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         trackLocation()
 
         launch {
+            var elapsedTime = 0L
+            val apiUpdateInterval = 5000L
+            val broadcastInterval = 1000L
+
             while (isActive) {
                 trackNoiseLevel()
-                sendLocationAndNoiseData()
-                delay(5000)
+
+                if (elapsedTime >= apiUpdateInterval) {
+                    sendLocationAndNoiseData()
+                    elapsedTime = 0
+                } else {
+                    elapsedTime += broadcastInterval
+                }
+
+                delay(broadcastInterval)
             }
         }
     }
@@ -156,7 +167,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         }
     }
 
-
     private fun trackNoiseLevel() {
         val bufferSize = audioRecord?.bufferSizeInFrames ?: 0
         val audioData = ShortArray(bufferSize)
@@ -168,6 +178,9 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             lastNoiseLevel = decibel.toInt()
 
             Log.d("NoiseTracking", "Decibel: $decibel")
+            val intent = Intent("com.example.myhearing.NOISE_LEVEL_UPDATE")
+            intent.putExtra("noise_level", decibel.toFloat())
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
         }
     }
 
