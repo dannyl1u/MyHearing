@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -139,6 +140,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
                 if (elapsedTime >= apiUpdateInterval) {
                     sendLocationAndNoiseData()
+                    saveDataToDatabase()
                     elapsedTime = 0
                 } else {
                     elapsedTime += broadcastInterval
@@ -214,6 +216,32 @@ class LocationAndNoiseService : Service(), CoroutineScope {
                 }
             } catch (e: Exception) {
                 Log.e("NetworkRequest", "Error: ${e.message}")
+            }
+        }
+    }
+
+    private fun saveDataToDatabase() {
+        val latitude = lastLatitude ?: return
+        val longitude = lastLongitude ?: return
+        val noiseLevel = lastNoiseLevel ?: return
+
+        launch(Dispatchers.IO) {
+            try {
+                val insertQuery = "INSERT INTO ${MyHearingDatabaseHelper.TABLE_NAME} " +
+                        "(time, dbLevel, comment, location) " +
+                        "VALUES (?, ?, ?, ?)"
+                val dbHelper = MyHearingDatabaseHelper(this@LocationAndNoiseService)
+                val db = dbHelper.writableDatabase
+                val statement = db.compileStatement(insertQuery)
+                val currentTimeMillis = System.currentTimeMillis()
+                statement.bindLong(1, currentTimeMillis)
+                statement.bindDouble(2, noiseLevel.toDouble())
+                statement.bindString(3, "")
+                statement.bindString(4, "$latitude, $longitude")
+                statement.executeInsert()
+
+            } catch (e: Exception) {
+                Log.e("Database error", "Error: ${e.message}")
             }
         }
     }
