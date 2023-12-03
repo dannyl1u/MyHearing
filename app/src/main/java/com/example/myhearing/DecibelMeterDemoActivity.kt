@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder.AudioSource
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -62,11 +63,21 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             initAudioRecord()
 
             startSoundCheckRunnable()
+            startLocationAndNoiseService()
         } else {
             requestPermission()
         }
 
 
+    }
+
+    private fun startLocationAndNoiseService() {
+        val serviceIntent = Intent(this, LocationAndNoiseService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
 
     private fun startSoundCheckRunnable() {
