@@ -83,9 +83,10 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     }
 
     private fun startTracking() {
+        trackLocation()
+
         launch {
             while (isActive) {
-                trackLocation()
                 trackNoiseLevel()
                 delay(5000)
             }
@@ -96,7 +97,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             .apply {
                 setWaitForAccurateLocation(false)
                 setMinUpdateIntervalMillis(1000)
-                setMaxUpdateDelayMillis(10000)
+                setMaxUpdateDelayMillis(1000)
             }.build()
 
         try {
