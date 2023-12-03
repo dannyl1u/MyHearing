@@ -18,17 +18,25 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.coroutines.CoroutineContext
 
 class LocationAndNoiseService : Service(), CoroutineScope {
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+
+    private var lastLatitude: Double? = null
+    private var lastLongitude: Double? = null
+    private var lastNoiseLevel: Int? = null
+
 
     private val serviceJob = Job()
     override val coroutineContext: CoroutineContext
@@ -42,7 +50,8 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
-                    Log.d("LocationTracking", "Lat: ${location.latitude}, Lon: ${location.longitude}")
+                    lastLatitude = location.latitude
+                    lastLongitude = location.longitude
                 }
             }
         }
@@ -88,6 +97,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         launch {
             while (isActive) {
                 trackNoiseLevel()
+                sendLocationAndNoiseData()
                 delay(5000)
             }
         }
@@ -126,6 +136,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             delay(1000) // delay for 1 second to get max amplitude
 
             val amplitude = recorder.maxAmplitude
+            lastNoiseLevel = amplitude
             Log.d("NoiseTracking", "Amplitude: $amplitude")
 
             recorder.stop()
@@ -137,6 +148,39 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         }
     }
 
+    private fun sendLocationAndNoiseData() {
+        val latitude = lastLatitude ?: return
+        val longitude = lastLongitude ?: return
+        val noiseLevel = lastNoiseLevel ?: return
+        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+
+        val jsonData = """
+        {
+            "latitude": "$latitude",
+            "longitude": "$longitude",
+            "noise_level": "$noiseLevel",
+            "timestamp": "$timestamp"
+        }
+    """.trimIndent()
+
+        launch(Dispatchers.IO) {
+            try {
+                val url = URL("https://myhearingserver.onrender.com/api/v1/insert")
+                with(url.openConnection() as HttpURLConnection) {
+                    requestMethod = "POST"
+                    setRequestProperty("Content-Type", "application/json")
+                    doOutput = true
+                    outputStream.write(jsonData.toByteArray())
+                    outputStream.flush()
+                    outputStream.close()
+
+                    Log.d("NetworkRequest", "Response Code: $responseCode")
+                }
+            } catch (e: Exception) {
+                Log.e("NetworkRequest", "Error: ${e.message}")
+            }
+        }
+    }
 
 
     companion object {
