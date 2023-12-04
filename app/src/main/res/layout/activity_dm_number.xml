@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
-    <!-- Same as noise_level.xml -->
+
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleLarge"
@@ -23,7 +23,6 @@
         android:max="100"
         android:progress="0"
         android:progressDrawable="@drawable/horizontal_progress_bar" />
-
 
     <TextView
         android:id="@+id/tvDecibelLevel"
@@ -54,6 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Settings" />
+
     </LinearLayout>
 
 </RelativeLayout>

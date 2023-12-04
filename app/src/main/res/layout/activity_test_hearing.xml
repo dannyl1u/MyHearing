@@ -18,7 +18,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-
     <FrameLayout
         android:id="@+id/overlay"
         android:layout_width="300dp"

@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><!-- nav_header.xml -->
-
-<!--NOTE: This is the top of the side menu bar. -->
-<!--This .xml is called in main_activity.xml as a part of the side menu bar-->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="vertical"> <!-- Add padding top -->
+    android:orientation="vertical">
 
     <ImageView
         android:layout_width="match_parent"
@@ -13,7 +10,6 @@
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
         android:src="@drawable/chillpic" />
-    <!-- Any views you want in the header go here -->
 
 </LinearLayout>
 

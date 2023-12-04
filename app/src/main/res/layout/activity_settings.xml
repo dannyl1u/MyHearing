@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-
     <TextView
         android:id="@+id/tvModeLabel"
         android:layout_width="wrap_content"
@@ -21,11 +20,11 @@
         android:layout_below="@id/tvModeLabel"
         android:layout_marginTop="0dp" />
 
-
     <Button
         android:id="@+id/applyButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="200dp"
         android:text="@string/apply_settings" />
+
 </RelativeLayout>
