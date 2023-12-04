@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/noise_level.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/noise_level.xml -->
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -10,10 +9,10 @@
         android:id="@+id/tvDecibelLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0 dB"
-        android:textSize="24sp"
         android:layout_centerInParent="true"
         android:gravity="center"
+        android:text="0 dB"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <Button

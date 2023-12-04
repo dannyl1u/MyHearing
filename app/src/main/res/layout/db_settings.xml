@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- res/layout/activity_settings.xml -->
+<?xml version="1.0" encoding="utf-8"?><!-- res/layout/activity_settings.xml -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,12 +13,13 @@
         android:layout_marginBottom="10dp"
         android:text="@string/select_ui"
         android:textSize="18sp" />
+
     <Spinner
         android:id="@+id/spinnerMode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tvModeLabel"
-        android:layout_marginTop="0dp"/>
+        android:layout_marginTop="0dp" />
 
 
     <Button

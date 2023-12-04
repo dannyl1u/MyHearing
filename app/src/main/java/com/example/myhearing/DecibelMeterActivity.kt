@@ -38,7 +38,8 @@ class DecibelMeterActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        val recordAudioPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        val recordAudioPermission =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
 
         if (!this.recording && recordAudioPermission == PackageManager.PERMISSION_GRANTED) {
             startMediaRecorder()
@@ -113,7 +114,8 @@ class DecibelMeterActivity : ComponentActivity() {
     }
 
     private fun checkPermissions() {
-        val recordAudioPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        val recordAudioPermission =
+            ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
 
         if (recordAudioPermission == PackageManager.PERMISSION_GRANTED) {
             startMediaRecorder()

@@ -2,7 +2,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
     <!-- TO CHANGE -->
@@ -16,6 +15,7 @@
         android:max="100"
         android:progress="0"
         android:progressDrawable="@drawable/circular_progress_bar" />
+
     <ProgressBar
         android:id="@+id/horizontalProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -27,22 +27,21 @@
         android:progressDrawable="@drawable/horizontal_progress_bar" />
 
 
-
     <TextView
         android:id="@+id/tvDecibelLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0 dB"
-        android:textSize="24sp"
         android:layout_centerInParent="true"
         android:gravity="center"
+        android:text="0 dB"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/backButton"

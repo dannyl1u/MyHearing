@@ -75,7 +75,8 @@ class LocationAndNoiseService : Service(), CoroutineScope {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             channel.description = "Channel for Location and Noise Service"
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -104,11 +105,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         serviceJob.cancel()
     }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "LocationAndNoiseServiceChannel")
             .setContentTitle("Location and Noise Service")
@@ -150,6 +151,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             }
         }
     }
+
     private fun trackLocation() {
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .apply {
@@ -190,7 +192,9 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         val latitude = lastLatitude ?: return
         val longitude = lastLongitude ?: return
         val noiseLevel = lastNoiseLevel ?: return
-        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+        val timestamp =
+            java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                .format(java.util.Date())
 
         val jsonData = """
         {

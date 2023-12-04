@@ -1,31 +1,31 @@
 package com.example.myhearing
 
+//import androidx.compose.ui.graphics.Color
+
+import android.graphics.Color
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-//import androidx.compose.ui.graphics.Color
-import android.graphics.Color
-import android.net.Uri
-import android.view.View.GONE
-import android.widget.MediaController
 import android.widget.VideoView
-
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.snackbar.Snackbar
 
 class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
-    private lateinit var StartButton : Button
-    private lateinit var leftEar : ImageView
-    private lateinit var rightEar : ImageView
+    private lateinit var StartButton: Button
+    private lateinit var leftEar: ImageView
+    private lateinit var rightEar: ImageView
 
     private lateinit var mediaPlayer: MediaPlayer
     private lateinit var noisePlayer: MediaPlayer
@@ -43,13 +43,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     val sideCounter = listOf("left", "left", "left", "right", "right", "right")
     private var sideIndex = 0
 
-    private var leftScore : Int = 0
-    private var rightScore : Int = 0
-    private lateinit var leftScoreTV : TextView
-    private lateinit var rightScoreTV : TextView
+    private var leftScore: Int = 0
+    private var rightScore: Int = 0
+    private lateinit var leftScoreTV: TextView
+    private lateinit var rightScoreTV: TextView
 
 
-    private lateinit var overlayCover : FrameLayout
+    private lateinit var overlayCover: FrameLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +76,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             StartButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
-        noisePlayer = MediaPlayer.create(this,R.raw.noise5_1)
+        noisePlayer = MediaPlayer.create(this, R.raw.noise5_1)
         // a frag pop up to suggest ear phones.
         val headphoneFragment = EarPhoneFragment()
         headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
@@ -84,14 +84,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     }
 
 
-
     private fun audioAndNoise(side: String) {
-        if (noiseIndex>=6) {
+        if (noiseIndex >= 6) {
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
-            val leftScorePercent = leftScore*100/9
-            val rightScorePercent = rightScore*100/9
-            showResultFragment(leftScorePercent,rightScorePercent)
+            val leftScorePercent = leftScore * 100 / 9
+            val rightScorePercent = rightScore * 100 / 9
+            showResultFragment(leftScorePercent, rightScorePercent)
 
             return
         }
@@ -109,13 +108,15 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         sideIndex++
 
     }
+
     fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
         require(count <= audioList.size) { "Count should be less than or equal to the size of the audio list." }
 
         val shuffledList = audioList.shuffled()
         return shuffledList.subList(0, count)
     }
-    private fun playAudioSequence(side : String, vararg audioResources: Int ) {
+
+    private fun playAudioSequence(side: String, vararg audioResources: Int) {
         var mediaPlayer: MediaPlayer? = null
 
         fun playNextAudio(index: Int) {
@@ -140,8 +141,9 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         playNextAudio(0)
     }
+
     private fun playNoise(fl: Float, side: String) {
-        if (side=="left") {
+        if (side == "left") {
             leftEar.alpha = 1f
             rightEar.alpha = 0.2f
         } else if (side == "right") {
@@ -171,20 +173,12 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         noisePlayer.setOnCompletionListener { mediaPlayer ->
             // finished playing a audio
             // remove overlayCover
-            overlayCover.visibility = View.GONE
+            overlayCover.visibility = GONE
             mediaPlayer.release()
         }
         // start audio
         noisePlayer.start()
     }
-
-
-
-
-
-
-
-
 
 
     fun onImageClick(view: View) {
@@ -221,13 +215,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             val selectedAudioResources = clickedImageIds.map { getAudioResourceForAnswer(it) }
             val correctCount = selectedAudioResources.count { it in randomAudioResources }
 
-            if ( sideIndex==0  || sideIndex==1 || sideIndex==2 || sideIndex==3) {
+            if (sideIndex == 0 || sideIndex == 1 || sideIndex == 2 || sideIndex == 3) {
                 leftScore += correctCount
-                val tempScore = (leftScore*100/9).toInt()
+                val tempScore = (leftScore * 100 / 9).toInt()
                 leftScoreTV.text = "$leftScore/9 correct"
             } else {
                 rightScore += correctCount
-                val tempScore = (rightScore*100/9).toInt()
+                val tempScore = (rightScore * 100 / 9).toInt()
                 rightScoreTV.text = "$rightScore/9 correct"
             }
             clickedImageIds.clear()
@@ -239,10 +233,10 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             overlayCover.bringToFront()
 
 
-            if (testIteration in 3..5){
+            if (testIteration in 3..5) {
                 // left ear finish. right ear start
                 audioAndNoise("right")
-            } else if (testIteration<3) {
+            } else if (testIteration < 3) {
                 // still left ear.
                 audioAndNoise("left")
                 testIteration++
@@ -275,7 +269,6 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     }
 
 
-
     private fun showSequentialSnackbar(messages: List<String>) {
         messages.forEachIndexed { index, message ->
             Handler().postDelayed({
@@ -294,13 +287,14 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         // Release the MediaPlayer resources when the activity is destroyed
         mediaPlayer.release()
-        noisePlayer?.stop()
+        noisePlayer.stop()
         noisePlayer.release()
     }
 
     override fun onOkButtonClick() {
         finish()
     }
+
     private fun showResultFragment(leftScore: Int, rightScore: Int) {
         val resultFragment = ResultFragment()
         val args = Bundle().apply {
@@ -330,16 +324,16 @@ class ResultFragment : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val leftScore = arguments?.getInt("leftScore", 0 ) ?:0
-        val rightScore = arguments?.getInt("rightScore", 0)?:0
-        val leftEarTV:TextView = view.findViewById(R.id.leftEar)
-        val rightEarTV:TextView = view.findViewById(R.id.rightEar)
-        val overallTV : TextView = view.findViewById(R.id.overallResult)
+        val leftScore = arguments?.getInt("leftScore", 0) ?: 0
+        val rightScore = arguments?.getInt("rightScore", 0) ?: 0
+        val leftEarTV: TextView = view.findViewById(R.id.leftEar)
+        val rightEarTV: TextView = view.findViewById(R.id.rightEar)
+        val overallTV: TextView = view.findViewById(R.id.overallResult)
 
         leftEarTV.text = "Left Ear:\n$leftScore%"
         rightEarTV.text = "Right Ear:\n$rightScore%"
 
-        var overallScore = (leftScore+rightScore)/2
+        var overallScore = (leftScore + rightScore) / 2
         if (overallScore >= 66.66) {
             // Green: pretty good
             overallTV.text = "Overall:$overallScore%\nPretty Good!"
@@ -365,8 +359,6 @@ class ResultFragment : DialogFragment() {
 }
 
 
-
-
 class EarPhoneFragment : DialogFragment() {
 
     override fun onCreateView(
@@ -390,7 +382,7 @@ class EarPhoneFragment : DialogFragment() {
         // Start playing the video
         videoView.start()
 
-        val okButton : Button = view.findViewById(R.id.okButton)
+        val okButton: Button = view.findViewById(R.id.okButton)
         okButton.setOnClickListener {
             dismiss()
         }

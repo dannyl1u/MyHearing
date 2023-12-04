@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
-<!-- Same as noise_level.xml -->
+    <!-- Same as noise_level.xml -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleLarge"
@@ -13,6 +13,7 @@
         android:indeterminate="true"
         android:progressDrawable="@drawable/circular_progress_bar"
         android:visibility="visible" />
+
     <ProgressBar
         android:id="@+id/horizontalProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -28,17 +29,17 @@
         android:id="@+id/tvDecibelLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0 dB"
-        android:textSize="24sp"
         android:layout_centerInParent="true"
         android:gravity="center"
+        android:text="0 dB"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/backButton"

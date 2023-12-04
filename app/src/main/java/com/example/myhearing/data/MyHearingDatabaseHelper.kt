@@ -3,17 +3,11 @@ package com.example.myhearing.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.util.Log
-import com.example.myhearing.HeatmapActivity
 import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.heatmaps.WeightedLatLng
 import java.text.DecimalFormat
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
-class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class MyHearingDatabaseHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
         const val DATABASE_NAME = "MyHearingDatabase"
         const val DATABASE_VERSION = 1
@@ -76,11 +70,11 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
         while (cursor.moveToNext()) {
             val entry = MyHearingEntry(
-                id = cursor.getInt(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.ID_COLUMN)),
-                dateTime = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.TIME_COLUMN)),
-                dbLevel = cursor.getDouble(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.DB_LEVEL_COLUMN)),
-                comment = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.COMMENT_COLUMN)),
-                location = cursor.getString(cursor.getColumnIndexOrThrow(MyHearingDatabaseHelper.LOCATION_COLUMN))
+                id = cursor.getInt(cursor.getColumnIndexOrThrow(ID_COLUMN)),
+                dateTime = cursor.getString(cursor.getColumnIndexOrThrow(TIME_COLUMN)),
+                dbLevel = cursor.getDouble(cursor.getColumnIndexOrThrow(DB_LEVEL_COLUMN)),
+                comment = cursor.getString(cursor.getColumnIndexOrThrow(COMMENT_COLUMN)),
+                location = cursor.getString(cursor.getColumnIndexOrThrow(LOCATION_COLUMN))
             )
             entryList.add(entry)
         }
@@ -100,7 +94,10 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     fun getRecordsSince(timestamp: Long): MutableList<Triple<Long, LatLng, Double>> {
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?", arrayOf(timestamp.toString()))
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?",
+            arrayOf(timestamp.toString())
+        )
         val records = mutableListOf<Triple<Long, LatLng, Double>>()
 
         while (cursor.moveToNext()) {
@@ -144,7 +141,10 @@ class MyHearingDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATA
 
     fun getRecentDecibelRecords(): List<Pair<Long, Float>> {
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?", arrayOf((System.currentTimeMillis() - 20000).toString()))
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?",
+            arrayOf((System.currentTimeMillis() - 20000).toString())
+        )
         val records = mutableListOf<Pair<Long, Float>>()
 
         while (cursor.moveToNext()) {

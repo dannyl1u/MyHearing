@@ -6,9 +6,8 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -16,8 +15,10 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.google.android.material.navigation.NavigationView
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -56,21 +57,25 @@ class MainActivity : AppCompatActivity() {
                     startActivity(intent)
                     true
                 }
+
                 R.id.nav_item2 -> {
                     val intent = Intent(this, HeatmapActivity::class.java)
                     startActivity(intent)
                     true
                 }
+
                 R.id.nav_item3 -> {
-                    val intent = Intent ( this, TestHearing::class.java)
+                    val intent = Intent(this, TestHearing::class.java)
                     startActivity(intent)
                     true
                 }
+
                 R.id.nav_item4 -> {
-                    val intent = Intent ( this, CalibrationActivity::class.java)
+                    val intent = Intent(this, CalibrationActivity::class.java)
                     startActivity(intent)
                     true
                 }
+
                 else -> false
             }
         }

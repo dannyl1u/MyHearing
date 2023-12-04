@@ -1,6 +1,5 @@
 package com.example.myhearing
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
