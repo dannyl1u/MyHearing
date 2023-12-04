@@ -78,6 +78,11 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     implementation("com.google.maps.android:android-maps-utils:3.7.0")
+    implementation("com.google.android.gms:play-services-location:17.0.0")
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("org.json:json:20201115")
+    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0")
+
 }
 
 secrets {
