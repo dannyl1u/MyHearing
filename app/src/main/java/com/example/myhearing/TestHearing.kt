@@ -1,7 +1,5 @@
 package com.example.myhearing
 
-//import androidx.compose.ui.graphics.Color
-
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.net.Uri
@@ -48,13 +46,11 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     private lateinit var leftScoreTV: TextView
     private lateinit var rightScoreTV: TextView
 
-
     private lateinit var overlayCover: FrameLayout
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.test_hearing)
+        setContentView(R.layout.activity_test_hearing)
         StartButton = findViewById(R.id.startButton)
         leftEar = findViewById(R.id.leftear)
         rightEar = findViewById(R.id.rightear)
@@ -70,19 +66,17 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         randomAudioResources = listOf() // init here, otherwise will crash
 
-
         StartButton.setOnClickListener {
             audioAndNoise("left")
             StartButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
-        noisePlayer = MediaPlayer.create(this, R.raw.noise5_1)
+        noisePlayer = MediaPlayer.create(this, R.raw.noise)
         // a frag pop up to suggest ear phones.
         val headphoneFragment = EarPhoneFragment()
         headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
 
     }
-
 
     private fun audioAndNoise(side: String) {
         if (noiseIndex >= 6) {
@@ -156,7 +150,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         var noisePlayer: MediaPlayer? = null
         noisePlayer = MediaPlayer().apply {
-            setDataSource(resources.openRawResourceFd(R.raw.noise5_1))
+            setDataSource(resources.openRawResourceFd(R.raw.noise))
 
             if (side == "left") {
                 // left ear
@@ -246,9 +240,10 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             }
         }
     }
-// queen > cat > king > rat > frog > door > jar > dog > car
 
     private fun getAudioResourceForAnswer(answer: String): Int {
+        // queen > cat > king > rat > frog > door > jar > dog > car
+
         return when (answer) {
             "dog" -> R.raw.dog
             "cat" -> R.raw.cat
@@ -260,25 +255,6 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             "door" -> R.raw.door
             "rat" -> R.raw.rat
             else -> 0 // Handle other cases if needed
-        }
-    }
-
-
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-
-    private fun showSequentialSnackbar(messages: List<String>) {
-        messages.forEachIndexed { index, message ->
-            Handler().postDelayed({
-                val snackbar = Snackbar.make(
-                    findViewById(android.R.id.content),
-                    message,
-                    if (index == messages.size - 1) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT
-                )
-                snackbar.show()
-            }, index * 3000L) // Delay between messages (adjust as needed)
         }
     }
 
@@ -348,7 +324,6 @@ class ResultFragment : DialogFragment() {
             overallTV.setTextColor(Color.parseColor("#bf1506")) //red
         }
 
-
         // Access the Button through the 'view' parameter
         val okButton: Button = view.findViewById(R.id.okButton)
         okButton.setOnClickListener {
@@ -357,7 +332,6 @@ class ResultFragment : DialogFragment() {
         }
     }
 }
-
 
 class EarPhoneFragment : DialogFragment() {
 
@@ -388,4 +362,3 @@ class EarPhoneFragment : DialogFragment() {
         }
     }
 }
-

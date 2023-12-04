@@ -6,8 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.location.Location
-import android.media.AudioRecord
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,12 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.databinding.ActivityHeatmapBinding
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -47,7 +39,6 @@ import kotlin.math.pow
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         const val MAX_DB_INTENSITY = 100.0
-        const val LOCATION_UPDATE_INTERVAL_MS = 1000L
         const val DEFAULT_LOCATION_PATTERN = "#.#######"
         val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
         val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
@@ -75,6 +66,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var lastLatLng: LatLng
     private var lastLatLngInit = false
+    private var updateDataInit = false
 
     private var mostRecentTimestamp = 0L
 
@@ -101,29 +93,12 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 //            return
 //        }
 
-//        val mapFragment =
-//            supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
-//        val mapView = mapFragment.requireView()
-//
-//        gridRows = (mapView.height / 50.0).toInt()
-//        gridCols = (mapView.width / 50.0).toInt()
-
         mMap = googleMap
 
-        startUpdateDataRunnable()
-
-//        val locationCallback = object : LocationCallback() {
-//            override fun onLocationResult(locationResult: LocationResult) {
-//                updateWeightedHeatmapData(locationResult.lastLocation ?: return)
-//            }
-//        }
-
-//        fusedLocationClient.requestLocationUpdates(
-//            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, LOCATION_UPDATE_INTERVAL_MS)
-//                .build(),
-//            locationCallback,
-//            Looper.getMainLooper()
-//        )
+        if (!updateDataInit) {
+            startUpdateDataRunnable()
+            updateDataInit = true
+        }
     }
 
     private fun requestPermissions() {
@@ -313,8 +288,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
         }
 
-        Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
-
         return averagedHeatmapData
     }
 
@@ -322,7 +295,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         val refreshHeatmapRunnable = object : Runnable {
             override fun run() {
                 refreshHeatmap(getAveragedHeatmapData())
-                handler.postDelayed(this, 500L)
+                handler.postDelayed(this, 1000L)
             }
         }
 
@@ -333,7 +306,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         val updateDataRunnable = object : Runnable {
             override fun run() {
                 updateWeightedHeatmapData()
-                handler2.postDelayed(this, 500L)
+                handler2.postDelayed(this, 2500L)
             }
         }
 
