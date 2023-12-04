@@ -68,9 +68,14 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
     private val noiseLevelReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+
             val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
             Log.d("DecibelMeterDemoActivity", "Received Decibel Level: $noiseLevel dB")
             noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
+            val progress = noiseLevel.toInt().coerceIn(0, 100)
+            // Update both ProgressBar's progress
+            progressBar.progress = progress
+            horizontalProgressBar.progress = progress
         }
     }
 
