@@ -178,7 +178,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
         if (readResult != null && readResult > 0) {
             val maxAmplitude = audioData.maxOrNull() ?: 0
-            val decibel = 20 * log10(maxAmplitude.toDouble())
+
+            val prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
+            val calibrationFactor = prefs.getFloat("calibration_factor", 1f)
+    
+            val decibel = 20 * log10(maxAmplitude.toDouble() * calibrationFactor)
             lastNoiseLevel = decibel.toInt()
 
             Log.d("NoiseTracking", "Decibel: $decibel")
