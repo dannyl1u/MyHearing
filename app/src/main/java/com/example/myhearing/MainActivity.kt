@@ -5,6 +5,8 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -140,6 +142,14 @@ class MainActivity : AppCompatActivity() {
         val dbHelper = MyHearingDatabaseHelper(this)
         val records = dbHelper.getRecentDecibelRecords()
 
+        val startColor = Color.parseColor("#FF7F7F")
+        val endColor = Color.WHITE
+
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(startColor, endColor)
+        )
+
         dataEntries.clear()
 
         records.forEachIndexed { index, pair ->
@@ -147,9 +157,12 @@ class MainActivity : AppCompatActivity() {
                 dataEntries.add(Entry(index.toFloat(), pair.second))
             }
         }
-
         val dataSet = LineDataSet(dataEntries, "Decibel Level")
+        dataSet.setDrawFilled(true)
+        dataSet.fillDrawable = gradientDrawable
+
         chart.data = LineData(dataSet)
+
 
         chart.data.notifyDataChanged()
         chart.notifyDataSetChanged()
