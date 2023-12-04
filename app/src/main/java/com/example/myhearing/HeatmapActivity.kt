@@ -7,9 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
-import android.media.AudioFormat
 import android.media.AudioRecord
-import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,12 +15,11 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.databinding.ActivityHeatmapBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -36,7 +33,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
@@ -44,12 +40,9 @@ import com.google.maps.android.heatmaps.WeightedLatLng
 import java.lang.Math.toDegrees
 import java.text.DecimalFormat
 import kotlin.math.atan
-import kotlin.math.log10
 import kotlin.math.pow
 
-// TODO: Get location/decibels from database
 // TODO: Tune most companion object vals
-// TODO: Generate GRID_ROWS/GRID_COLS dynamically based on screen size
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
@@ -84,6 +77,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var lastLatLng: LatLng
     private var lastLatLngInit = false
 
+    private var mostRecentTimestamp = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -91,9 +86,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
 
         requestPermissions()
-
-        initAudioRecord()
-        startSoundCheckRunnable()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -110,7 +102,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
+        val mapFragment =
+            supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
         val mapView = mapFragment.requireView()
 
         gridRows = (mapView.height / 50.0).toInt()
@@ -245,47 +238,37 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun updateWeightedHeatmapData(newLocation: Location) {
-        val newLatLng = LatLng(
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(newLocation.latitude).toDouble(),
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(newLocation.longitude).toDouble()
-        )
+        val dbHelper = MyHearingDatabaseHelper(this)
+        val newData = dbHelper.getRecordsSince(mostRecentTimestamp)
 
-        val newDbIntensity = getNewDbIntensity()
+        for (record in newData) {
+            val newTimestamp = record.first
+            val newLatLng = record.second
+            decibel = record.third
+            val newDbIntensity = decibel / MAX_DB_INTENSITY
 
-        if (latLngMap.containsKey(newLatLng)) {
-            weightedHeatmapData.removeIf {
-                val tempLatLng = wllToLatLng(it)
-                tempLatLng.latitude == newLatLng.latitude && tempLatLng.longitude == newLatLng.longitude
+            if (newTimestamp > mostRecentTimestamp) {
+                mostRecentTimestamp = newTimestamp
+                lastLatLng = newLatLng
             }
 
-            weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
-        } else {
-            latLngMap[newLatLng] = 1
-            weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
-        }
+            if (latLngMap.containsKey(newLatLng)) {
+                weightedHeatmapData.removeIf {
+                    val tempLatLng = wllToLatLng(it)
+                    tempLatLng.latitude == newLatLng.latitude && tempLatLng.longitude == newLatLng.longitude
+                }
 
-        lastLatLng = newLatLng
+                weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
+            } else {
+                latLngMap[newLatLng] = 1
+                weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
+            }
+        }
 
         if (!lastLatLngInit) {
             startRefreshHeatmapRunnable()
             lastLatLngInit = true
         }
-
-//        refreshHeatmap(newLatLng, getAveragedHeatmapData())
-    }
-
-    private fun getNewDbIntensity(): Double {
-//        val dbLevels = arrayOf(10, 20, 30, 40, 50, 60, 70, 80, 85)
-//        val randIndex = Random(System.currentTimeMillis()).nextInt(dbLevels.size)
-//        val randDbIntensity = dbLevels[randIndex]
-
-//        Log.e("new intensity", (randDbIntensity.toDouble() / MAX_DB_INTENSITY).toString())
-
-//        return randDbIntensity.toDouble() / MAX_DB_INTENSITY
-        findViewById<TextView>(R.id.heatmap_tvDecibelLevel).text = "Decibel Level: ${decibel.toInt()}"
-        val zoomLevel = mMap.cameraPosition.zoom
-        findViewById<TextView>(R.id.heatmap_tvZoomLevel).text = "Zoom Level: $zoomLevel"
-        return decibel / MAX_DB_INTENSITY
     }
 
     private fun getAveragedHeatmapData(): ArrayList<WeightedLatLng> {
@@ -341,6 +324,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun refreshHeatmap(averagedHeatmapData: ArrayList<WeightedLatLng>) {
+        findViewById<TextView>(R.id.heatmap_tvDecibelLevel).text =
+            "Decibel Level: ${decibel.toInt()}"
+        val zoomLevel = mMap.cameraPosition.zoom
+        findViewById<TextView>(R.id.heatmap_tvZoomLevel).text = "Zoom Level: $zoomLevel"
+
         if (!providerBuilt) {
             provider = HeatmapTileProvider.Builder()
                 .weightedData(averagedHeatmapData)
@@ -374,59 +362,5 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lat).toDouble(),
             DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lng).toDouble()
         )
-    }
-
-    private fun startSoundCheckRunnable() {
-        val soundCheckRunnable = object : Runnable {
-            override fun run() {
-                updateDecibelLevel()
-                handler.postDelayed(this, 1000L)
-            }
-        }
-
-        handler.post(soundCheckRunnable)
-    }
-
-    // https://developer.android.com/reference/android/media/AudioRecord
-    private fun initAudioRecord() {
-        val sampleRate = 44100 // Sample rate in Hz
-        val channelConfig = AudioFormat.CHANNEL_IN_MONO
-        val audioFormat = AudioFormat.ENCODING_PCM_16BIT
-        val bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
-
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.RECORD_AUDIO
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            sampleRate,
-            channelConfig,
-            audioFormat,
-            bufferSize
-        )
-
-        audioRecord?.startRecording()
-    }
-
-    private fun updateDecibelLevel() {
-        val bufferSize = audioRecord?.bufferSizeInFrames ?: 0
-        val audioData = ShortArray(bufferSize)
-        val readResult = audioRecord?.read(audioData, 0, bufferSize)
-
-        if (readResult != null && readResult != AudioRecord.ERROR_BAD_VALUE) {
-            val maxAmplitude = audioData.max()
-            decibel = 20 * log10(maxAmplitude.toDouble() * 0.25)
-//            Log.e("DecibelMeter", "Decibel: $decibel")
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        audioRecord?.stop()
-        audioRecord?.release()
     }
 }

@@ -228,7 +228,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         launch(Dispatchers.IO) {
             try {
                 val insertQuery = "INSERT INTO ${MyHearingDatabaseHelper.TABLE_NAME} " +
-                        "(time, dbLevel, comment, location) " +
+                        "(dateTime, dbLevel, comment, location) " +
                         "VALUES (?, ?, ?, ?)"
                 val dbHelper = MyHearingDatabaseHelper(this@LocationAndNoiseService)
                 val db = dbHelper.writableDatabase
