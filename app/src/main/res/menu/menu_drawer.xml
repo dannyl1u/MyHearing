@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_item1"
+        android:title="DB Meter" />
+
+    <item
+        android:id="@+id/nav_item2"
+        android:title="Heatmap" />
+
+    <item
+        android:id="@+id/nav_item3"
+        android:title="Test your hearing" />
+
+    <item
+        android:id="@+id/nav_item4"
+        android:title="Calibration" />
+
+</menu>

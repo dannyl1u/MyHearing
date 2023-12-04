@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:padding="16dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -16,9 +16,9 @@
             android:id="@+id/calibration_tvInfoTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/calibration_tvInfoTitle_text"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="@string/calibration_tvInfoTitle_text" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/calibration_tvInfoDetails"

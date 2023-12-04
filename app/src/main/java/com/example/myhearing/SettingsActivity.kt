@@ -1,6 +1,5 @@
 package com.example.myhearing
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -15,7 +14,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.db_settings)
+        setContentView(R.layout.activity_settings)
 
         modeSpinner = findViewById(R.id.spinnerMode)
         applySettingsButton = findViewById(R.id.applyButton)
@@ -40,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         editor.putString("selectedMode", selectedMode)
         editor.apply()
 
-        val intent = Intent(this, DecibelMeterDemoActivity::class.java)
+        val intent = Intent(this, DecibelMeterActivity::class.java)
 
         intent.putExtra("selectedMode", selectedMode)
 

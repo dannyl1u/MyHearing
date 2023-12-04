@@ -1,4 +1,4 @@
-package com.example.myhearing
+package com.example.myhearing.services
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.myhearing.R
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -49,7 +50,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
 
-
     private val serviceJob = Job()
     override val coroutineContext: CoroutineContext
         get() = serviceJob
@@ -75,7 +75,8 @@ class LocationAndNoiseService : Service(), CoroutineScope {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             channel.description = "Channel for Location and Noise Service"
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -104,11 +105,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         serviceJob.cancel()
     }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = NotificationCompat.Builder(this, "LocationAndNoiseServiceChannel")
             .setContentTitle("Location and Noise Service")
@@ -150,6 +151,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             }
         }
     }
+
     private fun trackLocation() {
         val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
             .apply {
@@ -176,7 +178,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
         if (readResult != null && readResult > 0) {
             val maxAmplitude = audioData.maxOrNull() ?: 0
-            val decibel = 20 * log10(maxAmplitude.toDouble())
+
+            val prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
+            val calibrationFactor = prefs.getFloat("calibration_factor", 1f)
+
+            val decibel = 20 * log10(maxAmplitude.toDouble() * calibrationFactor)
             lastNoiseLevel = decibel.toInt()
 
             Log.d("NoiseTracking", "Decibel: $decibel")
@@ -190,7 +196,9 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         val latitude = lastLatitude ?: return
         val longitude = lastLongitude ?: return
         val noiseLevel = lastNoiseLevel ?: return
-        val timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+        val timestamp =
+            java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+                .format(java.util.Date())
 
         val jsonData = """
         {
@@ -228,7 +236,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         launch(Dispatchers.IO) {
             try {
                 val insertQuery = "INSERT INTO ${MyHearingDatabaseHelper.TABLE_NAME} " +
-                        "(time, dbLevel, comment, location) " +
+                        "(dateTime, dbLevel, comment, location) " +
                         "VALUES (?, ?, ?, ?)"
                 val dbHelper = MyHearingDatabaseHelper(this@LocationAndNoiseService)
                 val db = dbHelper.writableDatabase
@@ -245,7 +253,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             }
         }
     }
-
 
     companion object {
         private const val SERVICE_NOTIFICATION_ID = 1
