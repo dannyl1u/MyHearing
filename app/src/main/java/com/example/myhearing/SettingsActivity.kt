@@ -14,7 +14,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.db_settings)
+        setContentView(R.layout.activity_settings)
 
         modeSpinner = findViewById(R.id.spinnerMode)
         applySettingsButton = findViewById(R.id.applyButton)

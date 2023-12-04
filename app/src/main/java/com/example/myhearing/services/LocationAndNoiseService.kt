@@ -1,4 +1,4 @@
-package com.example.myhearing
+package com.example.myhearing.services
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.myhearing.R
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
@@ -48,7 +49,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     private val sampleRate = 44100
     private val channelConfig = AudioFormat.CHANNEL_IN_MONO
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
-
 
     private val serviceJob = Job()
     override val coroutineContext: CoroutineContext
@@ -181,7 +181,7 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
             val prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
             val calibrationFactor = prefs.getFloat("calibration_factor", 1f)
-    
+
             val decibel = 20 * log10(maxAmplitude.toDouble() * calibrationFactor)
             lastNoiseLevel = decibel.toInt()
 
@@ -253,7 +253,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
             }
         }
     }
-
 
     companion object {
         private const val SERVICE_NOTIFICATION_ID = 1

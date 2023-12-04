@@ -20,6 +20,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.myhearing.services.LocationAndNoiseService
 
 class DecibelMeterDemoActivity : ComponentActivity() {
 
@@ -123,7 +124,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         // Set the content view based on the current mode
         when (currentMode) {
             Mode.NUMBER -> {
-                setContentView(R.layout.dbmode_number)
+                setContentView(R.layout.activity_dm_number)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
 
@@ -132,7 +133,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             }
 
             Mode.GAUGE -> {
-                setContentView(R.layout.dbmode_gauge)
+                setContentView(R.layout.activity_dm_circular)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.VISIBLE
@@ -141,7 +142,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
             }
 
             Mode.HORIZONTALGAUGE -> {
-                setContentView(R.layout.dbmode_horizontalgauge)
+                setContentView(R.layout.activity_dm_horizontal)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
