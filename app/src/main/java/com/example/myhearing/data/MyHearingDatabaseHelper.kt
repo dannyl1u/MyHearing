@@ -3,6 +3,7 @@ package com.example.myhearing.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import java.text.DecimalFormat
 
@@ -119,14 +120,14 @@ class MyHearingDatabaseHelper(context: Context) :
                 locationString = cursor.getString(locationColumnIndex)
             }
 
-            val locationRegex = Regex("(-?\\d+.\\d+),*(-?\\d+.\\d+)")
+            val locationRegex = Regex("(-?\\d+\\.\\d+),\\s*(-?\\d+\\.\\d+)")
             val latLngPair = locationRegex.find(locationString)
 
             latLngPair?.let {
                 val (lat, lng) = it.destructured
                 val latLng = LatLng(
-                    DecimalFormat("#.#######").format(lat).toDouble(),
-                    DecimalFormat("#.#######").format(lng).toDouble()
+                    DecimalFormat("#.#######").format(lat.toDouble()).toDouble(),
+                    DecimalFormat("#.#######").format(lng.toDouble()).toDouble()
                 )
 
                 records.add(Triple(timestamp, latLng, decibel.toDouble()))
