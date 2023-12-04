@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><!--https://www.geeksforgeeks.org/how-to-implement-circular-progressbar-in-android/-->
+<rotate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fromDegrees="270"
+    android:toDegrees="270">
+
+    <!--styling the progress bar-->
+    <shape
+        android:color="@color/design_default_color_primary"
+        android:innerRadiusRatio="2.5"
+        android:shape="ring"
+        android:thickness="12dp"
+        android:useLevel="true">
+        <gradient
+            android:angle="0"
+            android:endColor="@color/design_default_color_primary"
+            android:startColor="@color/design_default_color_primary"
+            android:type="sweep"
+            android:useLevel="false" />
+    </shape>
+
+</rotate>

@@ -5,4 +5,7 @@
     <string name="apply_settings">Apply Settings</string>
     <string name="select_ui">Select UI:</string>
     <string name="heatmap_tvDecibelLevel_default_text">Decibel Level: 0 dB</string>
+    <string name="calibration_tvTimer_default_text">00:10</string>
+    <string name="calibration_btnTimerControl_default_text">START</string>
+    <string name="calibration_tvInfo_text">Before starting the calibration process, find a silent area. Press START when you are ready to begin. Press CANCEL if you want to stop the calibration. Calibrating takes 10 seconds. Please remain silent during the process.</string>
 </resources>
