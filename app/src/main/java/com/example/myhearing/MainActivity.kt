@@ -193,24 +193,6 @@ class MainActivity : AppCompatActivity() {
             val hasCoarse = hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
             val hasFine = hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
 
-//            if (hasAudio && hasCoarse && hasFine) {
-//                // all granted, req bgLoc
-//            } else if (hasAudio && hasCoarse && !hasFine) {
-//                // request fine
-//            } else if (hasAudio && !hasCoarse && hasFine) {
-//                // impossible
-//            } else if (!hasAudio && hasCoarse && hasFine) {
-//                // request audio, req bgLoc
-//            } else if (hasAudio && !hasCoarse && !hasFine) {
-//                // request fine
-//            } else if (!hasAudio && !hasCoarse && hasFine) {
-//                // impossible
-//            } else if (!hasAudio && hasCoarse && !hasFine) {
-//                // request fine and audio
-//            } else if (!hasAudio && !hasCoarse && !hasFine) {
-//                // request fine and audio
-//            }
-
             if (hasAudio && hasCoarse && hasFine) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
