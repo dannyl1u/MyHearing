@@ -58,7 +58,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivityHeatmapBinding
 
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mMap: GoogleMap
 
     private val latLngMap: MutableMap<LatLng, Int> = mutableMapOf()
@@ -67,8 +66,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var providerBuilt = false
     private var mapCentred = false
 
-    private var audioRecord: AudioRecord? = null
     private val handler = Handler(Looper.getMainLooper())
+    private val handler2 = Handler(Looper.getMainLooper())
     private var decibel = 0.0
 
     private var gridRows = 0
@@ -89,40 +88,42 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        val fgLocationPermissions = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
+//        val fgLocationPermissions = arrayOf(
+//            Manifest.permission.ACCESS_COARSE_LOCATION,
+//            Manifest.permission.ACCESS_FINE_LOCATION
+//        )
+//
+//        val fgLocationPermissionsGranted = fgLocationPermissions.all {
+//            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+//        }
+//
+//        if (!fgLocationPermissionsGranted) {
+//            return
+//        }
 
-        val fgLocationPermissionsGranted = fgLocationPermissions.all {
-            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
-
-        if (!fgLocationPermissionsGranted) {
-            return
-        }
-
-        val mapFragment =
-            supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
-        val mapView = mapFragment.requireView()
-
-        gridRows = (mapView.height / 50.0).toInt()
-        gridCols = (mapView.width / 50.0).toInt()
+//        val mapFragment =
+//            supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
+//        val mapView = mapFragment.requireView()
+//
+//        gridRows = (mapView.height / 50.0).toInt()
+//        gridCols = (mapView.width / 50.0).toInt()
 
         mMap = googleMap
 
-        val locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                updateWeightedHeatmapData(locationResult.lastLocation ?: return)
-            }
-        }
+        startUpdateDataRunnable()
 
-        fusedLocationClient.requestLocationUpdates(
-            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, LOCATION_UPDATE_INTERVAL_MS)
-                .build(),
-            locationCallback,
-            Looper.getMainLooper()
-        )
+//        val locationCallback = object : LocationCallback() {
+//            override fun onLocationResult(locationResult: LocationResult) {
+//                updateWeightedHeatmapData(locationResult.lastLocation ?: return)
+//            }
+//        }
+
+//        fusedLocationClient.requestLocationUpdates(
+//            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, LOCATION_UPDATE_INTERVAL_MS)
+//                .build(),
+//            locationCallback,
+//            Looper.getMainLooper()
+//        )
     }
 
     private fun requestPermissions() {
@@ -230,14 +231,19 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun initMap() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
+
+        val mapView = mapFragment.requireView()
+        gridRows = (mapView.height / 50.0).toInt()
+        gridCols = (mapView.width / 50.0).toInt()
+
         mapFragment.getMapAsync(this)
     }
 
-    private fun updateWeightedHeatmapData(newLocation: Location) {
+    private fun updateWeightedHeatmapData() {
         val dbHelper = MyHearingDatabaseHelper(this)
         val newData = dbHelper.getRecordsSince(mostRecentTimestamp)
 
@@ -265,7 +271,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        if (!lastLatLngInit) {
+        if (!lastLatLngInit && weightedHeatmapData.size > 0) {
             startRefreshHeatmapRunnable()
             lastLatLngInit = true
         }
@@ -321,6 +327,17 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         handler.post(refreshHeatmapRunnable)
+    }
+
+    private fun startUpdateDataRunnable() {
+        val updateDataRunnable = object : Runnable {
+            override fun run() {
+                updateWeightedHeatmapData()
+                handler2.postDelayed(this, 500L)
+            }
+        }
+
+        handler2.post(updateDataRunnable)
     }
 
     private fun refreshHeatmap(averagedHeatmapData: ArrayList<WeightedLatLng>) {
