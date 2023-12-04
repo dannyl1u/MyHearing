@@ -10,8 +10,10 @@
     <item
         android:id="@+id/nav_item2"
         android:title="Heatmap" />
-    <!-- Add more items as needed -->
     <item
         android:id="@+id/nav_item3"
         android:title="Test your hearing" />
+    <item
+        android:id="@+id/nav_item4"
+        android:title="Calibration" />
 </menu>
