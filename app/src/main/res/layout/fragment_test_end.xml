@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="400dp"
+    android:orientation="vertical"
+    android:padding="16dp"
+
+    >
+
+    <TextView
+        android:id="@+id/messageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your hearing test result:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/resultFace"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:src="@drawable/resultface"
+        app:layout_constraintBottom_toTopOf="@+id/space"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+
+    <TextView
+        android:id="@+id/leftEar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:text="Left Ear:"
+        app:layout_constraintBottom_toBottomOf="@+id/resultFace"
+        app:layout_constraintEnd_toStartOf="@+id/space" />
+
+    <TextView
+        android:id="@+id/rightEar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Right Ear:"
+        app:layout_constraintBottom_toBottomOf="@+id/resultFace"
+        app:layout_constraintStart_toEndOf="@+id/space" />
+
+    <TextView
+        android:id="@+id/overallResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Overall:"
+        app:layout_constraintBottom_toBottomOf="@+id/resultFace"
+        android:textStyle="bold"
+        android:textColor="#303030"
+        android:gravity="center_horizontal"
+        android:textSize="20dp"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/resultFace"
+        app:layout_constraintBottom_toTopOf="@+id/space"
+        />
+
+
+    <Space
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        app:layout_constraintBottom_toTopOf="@+id/okButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/overallResult"
+        android:id="@+id/space"/>
+
+    <Button
+        android:id="@+id/okButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home page"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/space" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
