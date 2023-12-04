@@ -72,7 +72,9 @@ class DecibelMeterActivity : ComponentActivity() {
 
             val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
             Log.d("DecibelMeterActivity", "Received Decibel Level: $noiseLevel dB")
-            noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
+            if (noiseLevel.toInt() >= 0) {
+                noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
+            }
             val progress = noiseLevel.toInt().coerceIn(0, 100)
             // Update both ProgressBar's progress
             progressBar.progress = progress
