@@ -39,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         editor.putString("selectedMode", selectedMode)
         editor.apply()
 
-        val intent = Intent(this, DecibelMeterDemoActivity::class.java)
+        val intent = Intent(this, DecibelMeterActivity::class.java)
 
         intent.putExtra("selectedMode", selectedMode)
 

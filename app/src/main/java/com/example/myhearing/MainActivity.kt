@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {
-                    val intent = Intent(this, DecibelMeterDemoActivity::class.java)
+                    val intent = Intent(this, DecibelMeterActivity::class.java)
                     startActivity(intent)
                     true
                 }

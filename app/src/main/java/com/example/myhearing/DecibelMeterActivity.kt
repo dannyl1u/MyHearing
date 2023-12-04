@@ -22,7 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.myhearing.services.LocationAndNoiseService
 
-class DecibelMeterDemoActivity : ComponentActivity() {
+class DecibelMeterActivity : ComponentActivity() {
 
     private val RECORD_AUDIO_PERMISSION_CODE = 123
     private var audioRecord: AudioRecord? = null
@@ -40,7 +40,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
 
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
-        Log.d("DecibelMeterDemoActivity", currentMode.toString())
+        Log.d("DecibelMeterActivity", currentMode.toString())
         setLayoutForCurrentMode()
 
         noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
@@ -71,7 +71,7 @@ class DecibelMeterDemoActivity : ComponentActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
             val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
-            Log.d("DecibelMeterDemoActivity", "Received Decibel Level: $noiseLevel dB")
+            Log.d("DecibelMeterActivity", "Received Decibel Level: $noiseLevel dB")
             noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
             val progress = noiseLevel.toInt().coerceIn(0, 100)
             // Update both ProgressBar's progress

@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,11 +13,9 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.TextView
-import android.widget.Toast
 import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
-import com.google.android.material.snackbar.Snackbar
 
 class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
     private lateinit var StartButton: Button
