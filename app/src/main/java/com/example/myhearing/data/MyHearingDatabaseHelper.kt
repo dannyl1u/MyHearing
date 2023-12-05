@@ -3,6 +3,7 @@ package com.example.myhearing.data
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.example.myhearing.HeatmapActivity
 import com.google.android.gms.maps.model.LatLng
 import java.text.DecimalFormat
 
@@ -66,8 +67,10 @@ class MyHearingDatabaseHelper(context: Context) :
             latLngPair?.let {
                 val (lat, lng) = it.destructured
                 val latLng = LatLng(
-                    DecimalFormat("#.#######").format(lat.toDouble()).toDouble(),
-                    DecimalFormat("#.#######").format(lng.toDouble()).toDouble()
+                    DecimalFormat(HeatmapActivity.DEFAULT_LOCATION_PATTERN).format(lat.toDouble())
+                        .toDouble(),
+                    DecimalFormat(HeatmapActivity.DEFAULT_LOCATION_PATTERN).format(lng.toDouble())
+                        .toDouble()
                 )
 
                 records.add(Triple(time, latLng, decibel.toDouble()))

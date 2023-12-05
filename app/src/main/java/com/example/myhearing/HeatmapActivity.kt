@@ -2,7 +2,6 @@ package com.example.myhearing
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
@@ -28,16 +27,16 @@ import java.text.DecimalFormat
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
-        const val DEFAULT_LOCATION_PATTERN = "#.#######"
+        const val DEFAULT_LOCATION_PATTERN = "#.#####"
         const val UPDATE_DATA_DELAY_MS = 500L
         const val REFRESH_HEATMAP_DELAY_MS = 500L
         const val MAX_DB_INTENSITY = 100.0
         const val CELL_SIZE_PX = 40
-        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
-        val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
+        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.RED)
+        val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.85f)
         const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 50
-        const val DEFAULT_ZOOM_LEVEL = 19f
+        const val PROVIDER_RADIUS = 25
+        const val DEFAULT_ZOOM_LEVEL = 18f
     }
 
     private lateinit var binding: ActivityHeatmapBinding
@@ -85,7 +84,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mMap.setMaxZoomPreference(20f)
+        mMap.setMaxZoomPreference(19.5f)
 
         val mapView = mapFragment.requireView()
         gridRows = (mapView.height / CELL_SIZE_PX)
@@ -117,8 +116,10 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             for (record in newRecords) {
                 val newTimestamp = record.first
                 val newLatLng = LatLng(
-                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude).toDouble(),
-                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.longitude).toDouble(),
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude)
+                        .toDouble(),
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.longitude)
+                        .toDouble(),
                 )
 
                 val dbReading = record.third.coerceIn(0.0, 300.0)
@@ -210,8 +211,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
                 }
-
-                Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
             }
         }
     }
