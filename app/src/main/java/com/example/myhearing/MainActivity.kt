@@ -91,12 +91,6 @@ class MainActivity : AppCompatActivity() {
         // Navigation items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_item1 -> {
-                    val intent = Intent(this, DecibelMeterActivity::class.java)
-                    startActivity(intent)
-                    true
-                }
-
                 R.id.nav_item2 -> {
                     val intent = Intent(this, HeatmapActivity::class.java)
                     startActivity(intent)
@@ -124,7 +118,7 @@ class MainActivity : AppCompatActivity() {
 
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
-        Log.d("DecibelMeterActivity", currentMode.toString())
+        Log.d("MainActivity", currentMode.toString())
 
         setLayoutForCurrentMode()
 
@@ -149,7 +143,7 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
             val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
-            Log.d("DecibelMeterActivity", "Received Decibel Level: $noiseLevel dB")
+            Log.d("MainActivity", "Received Decibel Level: $noiseLevel dB")
             if (noiseLevel.toInt() >= 0) {
                 noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
             }

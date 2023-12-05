@@ -8,7 +8,11 @@
     <item android:id="@android:id/progress">
         <clip>
             <shape android:shape="rectangle">
-                <solid android:color="#00FF00" />
+                <gradient
+                    android:startColor="#00FF00"
+                    android:endColor="#FF0000"
+                    android:angle="0"
+                />
             </shape>
         </clip>
     </item>
