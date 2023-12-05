@@ -119,8 +119,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 val newTimestamp = record.first
                 val newLatLng = record.second
 
-                val dbReading = record.third
-                val newDbIntensity = dbReading / MAX_DB_INTENSITY
+                val dbReading = record.third.coerceIn(0.0, 300.0)
+                val newDbIntensity = (dbReading / MAX_DB_INTENSITY).coerceAtMost(1.0)
 
                 if (newTimestamp > latestTimestamp) {
                     latestTimestamp = newTimestamp
