@@ -2,6 +2,7 @@ package com.example.myhearing
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
@@ -27,20 +28,18 @@ import java.text.DecimalFormat
 import kotlin.math.atan
 import kotlin.math.pow
 
-// TODO: Tune companion object values
-
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         const val DEFAULT_LOCATION_PATTERN = "#.#######"
-        const val UPDATE_DATA_DELAY_MS = 1000L
+        const val UPDATE_DATA_DELAY_MS = 500L
         const val REFRESH_HEATMAP_DELAY_MS = 500L
         const val MAX_DB_INTENSITY = 100.0
-        const val CELL_SIZE_PX = 50
+        const val CELL_SIZE_PX = 40
         val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
         val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
-        const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 35
-        const val DEFAULT_ZOOM_LEVEL = 18f
+        const val PROVIDER_MAX_INTENSITY = 2.5
+        const val PROVIDER_RADIUS = 50
+        const val DEFAULT_ZOOM_LEVEL = 19f
     }
 
     private lateinit var binding: ActivityHeatmapBinding
@@ -53,6 +52,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var latestTimestamp = 0L
     private lateinit var latestLatLng: LatLng
+    private lateinit var latestAveragedLatLng: LatLng
     private var latestLatLngInit = false
 
     private val latLngMap: MutableMap<LatLng, Int> = mutableMapOf()
@@ -87,6 +87,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap.setMaxZoomPreference(20f)
 
         val mapView = mapFragment.requireView()
         gridRows = (mapView.height / CELL_SIZE_PX)
@@ -181,6 +182,17 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
 
+            val latLngRow = ((latestLatLng.latitude - minLatLng.latitude) / cellSizeLat).toInt()
+            val latLngCol = ((latestLatLng.longitude - minLatLng.longitude) / cellSizeLng).toInt()
+
+            val latLngCentreLat = minLatLng.latitude + (latLngRow + 0.5) * cellSizeLat
+            val latLngCentreLng = minLatLng.longitude + (latLngCol + 0.5) * cellSizeLng
+
+            latestAveragedLatLng = LatLng(
+                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(latLngCentreLat).toDouble(),
+                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(latLngCentreLng).toDouble(),
+            )
+
             averagedHeatmapDataMutex.withLock {
                 averagedHeatmapData = ArrayList()
 
@@ -200,9 +212,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private suspend fun refreshHeatmap() {
-        // TODO: Remove before submission
-        binding.heatmapTvZoomLevel.text = "Zoom Level: ${mMap.cameraPosition.zoom}"
-
         averagedHeatmapDataMutex.withLock {
             if (!providerBuilt) {
                 provider = HeatmapTileProvider.Builder()
@@ -218,9 +227,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
+        Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
+
         mMap.clear()
         mMap.addTileOverlay(TileOverlayOptions().tileProvider(provider))
-        mMap.addMarker(MarkerOptions().position(latestLatLng).title("Current Location"))
+        mMap.addMarker(MarkerOptions().position(latestAveragedLatLng).title("Current Location"))
 
         if (!mapCentred) {
             mMap.animateCamera(
