@@ -21,14 +21,80 @@
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
+                android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
                 app:popupTheme="@style/Theme.AppCompat.Light"></androidx.appcompat.widget.Toolbar>
+            <!-- Central Part -->
+            <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvDecibelLevel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center|fill_vertical"
+                android:text="0 dB"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:layout_marginTop = "25dp"/>
+
+            <FrameLayout
+                android:layout_width="400dp"
+                android:layout_height="100dp"
+               >
+
+                <!-- The first ProgressBar -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/circular_progress_bar" />
+
+                <!-- The second ProgressBar (set initially invisible) -->
+                <ProgressBar
+                    android:id="@+id/horizontalProgressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="350dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="invisible"
+                    android:max="100"
+                    android:progress="0"
+                    android:progressDrawable="@drawable/horizontal_progress_bar" />
+
+            </FrameLayout>
+        </LinearLayout>
+                <!-- LinearLayout for Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Settings Button -->
+                    <Button
+                        android:id="@+id/settingsButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="UI Settings" />
+
+                </LinearLayout>
+
+
 
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/chart"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="0dp"
+                android:layout_weight = "1"/>
 
         </LinearLayout>
 

@@ -32,7 +32,6 @@
         </activity>
 
         <activity android:name=".CalibrationActivity" />
-        <activity android:name=".DecibelMeterActivity" />
         <activity android:name=".HeatmapActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".TestHearing" />

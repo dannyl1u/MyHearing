@@ -20,7 +20,7 @@ class SettingsActivity : AppCompatActivity() {
         applySettingsButton = findViewById(R.id.applyButton)
 
         // Use spinner to determine UI
-        val modeOptions = arrayOf("Number", "Gauge", "Horizontal Gauge")
+        val modeOptions = arrayOf("Number", "Circular Gauge", "Horizontal Gauge")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modeOptions)
         modeSpinner.adapter = adapter
 
@@ -39,7 +39,7 @@ class SettingsActivity : AppCompatActivity() {
         editor.putString("selectedMode", selectedMode)
         editor.apply()
 
-        val intent = Intent(this, DecibelMeterActivity::class.java)
+        val intent = Intent(this, MainActivity::class.java)
 
         intent.putExtra("selectedMode", selectedMode)
 
