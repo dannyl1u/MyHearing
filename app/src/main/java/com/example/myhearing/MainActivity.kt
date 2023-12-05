@@ -15,8 +15,6 @@ import android.media.AudioRecord
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.view.View
@@ -27,7 +25,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -37,6 +34,7 @@ import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.services.LocationAndNoiseService
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -57,17 +55,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chart: LineChart
     private var dataEntries: ArrayList<Entry> = ArrayList()
 
-    private val RECORD_AUDIO_PERMISSION_CODE = 123
     private var audioRecord: AudioRecord? = null
     private lateinit var noiseLevelTextView: TextView
     private lateinit var settingsButton: Button
-    private val handler = Handler(Looper.getMainLooper())
 
     private var currentMode = Mode.NUMBER
     private lateinit var progressBar: ProgressBar
     private lateinit var horizontalProgressBar: ProgressBar
 
     private lateinit var prefs: SharedPreferences
+    private lateinit var dbHelper: MyHearingDatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,6 +72,8 @@ class MainActivity : AppCompatActivity() {
 
         prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
         requestPermissions()
+
+        dbHelper = MyHearingDatabaseHelper(this)
 
         // Initialize UI components
         drawerLayout = findViewById(R.id.drawerLayout)
@@ -132,16 +131,9 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
-        // Start recording service if permission is granted
-        if (checkPermission()) {
-            startLocationAndNoiseService()
-        } else {
-            requestPermission()
-        }
+
         // Initialize chart
         initChart()
-        chartUpdateHandler.post(chartUpdateRunnable)
-
     }
 
     /** Service implementation, transferred over from DecibelMeterActivity
@@ -152,7 +144,8 @@ class MainActivity : AppCompatActivity() {
             val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
             Log.d("MainActivity", "Received Decibel Level: $noiseLevel dB")
             if (noiseLevel.toInt() >= 0) {
-                noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
+                noiseLevelTextView.text =
+                    getString(R.string.tvDecibelLevel_text, noiseLevel.toInt())
             }
             val progress = noiseLevel.toInt().coerceIn(0, 100)
             // Update db meter in UI
@@ -173,7 +166,6 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(noiseLevelReceiver)
-        chartUpdateHandler.removeCallbacks(chartUpdateRunnable)
     }
 
     override fun onResume() {
@@ -196,7 +188,14 @@ class MainActivity : AppCompatActivity() {
 
         val filter = IntentFilter("com.example.myhearing.NOISE_LEVEL_UPDATE")
         LocalBroadcastManager.getInstance(this).registerReceiver(noiseLevelReceiver, filter)
-        chartUpdateHandler.post(chartUpdateRunnable)
+
+
+        lifecycleScope.launch {
+            while (true) {
+                updateChartData()
+                delay(500)
+            }
+        }
     }
 
     private fun initChart() {
@@ -228,40 +227,35 @@ class MainActivity : AppCompatActivity() {
         return labels
     }
 
-    fun updateChartData() {
-        val dbHelper = MyHearingDatabaseHelper(this)
-        val records = dbHelper.getRecentDecibelRecords()
-        // Set color gradient for Linechart
-        val startColor = Color.parseColor("#FF7F7F")
-        val endColor = Color.WHITE
-
-        val gradientDrawable = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(startColor, endColor)
-        )
-        dataEntries.clear()
-
-        records.forEachIndexed { index, pair ->
-            if (pair.second >= 0) {
-                dataEntries.add(Entry(index.toFloat(), pair.second))
-            }
+    private suspend fun updateChartData() {
+        val records = withContext(Dispatchers.IO) {
+            dbHelper.getRecentDecibelRecords()
         }
-        val dataSet = LineDataSet(dataEntries, "Decibel Level")
-        // Fill in bottom part of linechart
-        dataSet.setDrawFilled(true)
-        dataSet.fillDrawable = gradientDrawable
 
-        chart.data = LineData(dataSet)
-        chart.data.notifyDataChanged()
-        chart.notifyDataSetChanged()
-        chart.invalidate()
-    }
+        withContext(Dispatchers.Main) {
+            val startColor = Color.RED
+            val endColor = Color.GREEN
 
-    private val chartUpdateHandler = Handler(Looper.getMainLooper())
-    private val chartUpdateRunnable = object : Runnable {
-        override fun run() {
-            updateChartData()
-            chartUpdateHandler.postDelayed(this, 1000)
+            val gradientDrawable = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(startColor, endColor)
+            )
+            dataEntries.clear()
+
+            records.forEachIndexed { index, pair ->
+                if (pair.second >= 0) {
+                    dataEntries.add(Entry(index.toFloat(), pair.second))
+                }
+            }
+            val dataSet = LineDataSet(dataEntries, "Decibel Level")
+
+            dataSet.setDrawFilled(true)
+            dataSet.fillDrawable = gradientDrawable
+
+            chart.data = LineData(dataSet)
+            chart.data.notifyDataChanged()
+            chart.notifyDataSetChanged()
+            chart.invalidate()
         }
     }
 
@@ -297,6 +291,8 @@ class MainActivity : AppCompatActivity() {
             if (hasAudio && hasCoarse && hasFine) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                } else {
+                    startLocationAndNoiseService()
                 }
             } else if (hasAudio) {
                 launchFineLocationDialog()
@@ -346,12 +342,14 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     launchAppInfo()
                 }
+
                 dialog.dismiss()
             }
             .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }
+
                 dialog.dismiss()
             }
             .create()
@@ -399,7 +397,9 @@ class MainActivity : AppCompatActivity() {
 
     private val bgLocationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (!isGranted) {
+            if (isGranted) {
+                startLocationAndNoiseService()
+            } else {
                 launchBgLocationDialog()
             }
         }
@@ -412,6 +412,8 @@ class MainActivity : AppCompatActivity() {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    } else {
+                        startLocationAndNoiseService()
                     }
                 } else {
                     launchAppInfo()
@@ -420,6 +422,7 @@ class MainActivity : AppCompatActivity() {
                 dialog.dismiss()
             }
             .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
+                startLocationAndNoiseService()
                 dialog.dismiss()
             }
             .create()
@@ -427,7 +430,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private enum class Mode {
-        NUMBER, GAUGE, HORIZONTALGAUGE
+        NUMBER, GAUGE, HORIZONTAL_GAUGE
     }
 
     private fun setLayoutForCurrentMode() {
@@ -447,7 +450,7 @@ class MainActivity : AppCompatActivity() {
                 horizontalProgressBar.visibility = View.GONE
             }
 
-            Mode.HORIZONTALGAUGE -> {
+            Mode.HORIZONTAL_GAUGE -> {
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
@@ -460,35 +463,14 @@ class MainActivity : AppCompatActivity() {
         return when (modeString) {
             "Number" -> Mode.NUMBER
             "Circular Gauge" -> Mode.GAUGE
-            "Horizontal Gauge" -> Mode.HORIZONTALGAUGE
+            "Horizontal Gauge" -> Mode.HORIZONTAL_GAUGE
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
     }
 
-    private fun checkPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun requestPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.RECORD_AUDIO),
-            RECORD_AUDIO_PERMISSION_CODE
-        )
-    }
-
     override fun onDestroy() {
-        stopSoundCheckRunnable()
         super.onDestroy()
         audioRecord?.stop()
         audioRecord?.release()
-    }
-
-    // Release AudioRecord to prevent crashing upon finish()
-    private fun stopSoundCheckRunnable() {
-        handler.removeCallbacksAndMessages(null)
     }
 }
