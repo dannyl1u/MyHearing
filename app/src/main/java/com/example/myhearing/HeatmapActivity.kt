@@ -1,22 +1,11 @@
 package com.example.myhearing
 
-import android.Manifest
-import android.app.AlertDialog
-import android.content.DialogInterface
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
-import android.widget.TextView
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
+import com.example.myhearing.data.WeightedLocation
 import com.example.myhearing.databinding.ActivityHeatmapBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -28,46 +17,50 @@ import com.google.android.gms.maps.model.TileOverlayOptions
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import java.lang.Math.toDegrees
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
-import kotlin.math.atan
-import kotlin.math.pow
-
-// TODO: Tune most companion object vals
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
+        const val DEFAULT_LOCATION_PATTERN = "#.#####"
+        const val UPDATE_DATA_DELAY_MS = 500L
+        const val REFRESH_HEATMAP_DELAY_MS = 500L
         const val MAX_DB_INTENSITY = 100.0
-        const val DEFAULT_LOCATION_PATTERN = "#.#######"
-        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
-        val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
+        const val CELL_SIZE_PX = 40
+        val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.RED)
+        val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.85f)
         const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 35
+        const val PROVIDER_RADIUS = 25
         const val DEFAULT_ZOOM_LEVEL = 18f
     }
 
     private lateinit var binding: ActivityHeatmapBinding
-
+    private lateinit var dbHelper: MyHearingDatabaseHelper
+    private lateinit var mapFragment: SupportMapFragment
     private lateinit var mMap: GoogleMap
 
+    private var gridRows = 1
+    private var gridCols = 1
+
+    private var latestTimestamp = 0L
+    private lateinit var latestLatLng: LatLng
+    private lateinit var latestAveragedLatLng: LatLng
+    private var latestLatLngInit = false
+
     private val latLngMap: MutableMap<LatLng, Int> = mutableMapOf()
-    private val weightedHeatmapData = ArrayList<WeightedLatLng>()
+    private val weightedHeatmapData = ArrayList<WeightedLocation>()
+    private var averagedHeatmapData = ArrayList<WeightedLatLng>()
+    private var weightedHeatmapDataMutex = Mutex()
+    private var averagedHeatmapDataMutex = Mutex()
+
     private lateinit var provider: HeatmapTileProvider
     private var providerBuilt = false
     private var mapCentred = false
-
-    private val handler = Handler(Looper.getMainLooper())
-    private val handler2 = Handler(Looper.getMainLooper())
-    private var decibel = 0.0
-
-    private var gridRows = 0
-    private var gridCols = 0
-
-    private lateinit var lastLatLng: LatLng
-    private var lastLatLngInit = false
-    private var updateDataInit = false
-
-    private var mostRecentTimestamp = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,281 +68,181 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityHeatmapBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        requestPermissions()
-    }
+        dbHelper = MyHearingDatabaseHelper(this)
 
-    override fun onMapReady(googleMap: GoogleMap) {
-//        val fgLocationPermissions = arrayOf(
-//            Manifest.permission.ACCESS_COARSE_LOCATION,
-//            Manifest.permission.ACCESS_FINE_LOCATION
-//        )
-//
-//        val fgLocationPermissionsGranted = fgLocationPermissions.all {
-//            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-//        }
-//
-//        if (!fgLocationPermissionsGranted) {
-//            return
-//        }
-
-        mMap = googleMap
-
-        if (!updateDataInit) {
-            startUpdateDataRunnable()
-            updateDataInit = true
-        }
-    }
-
-    private fun requestPermissions() {
-        val fgLocationPermissions = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-
-        fgLocationPermissionLauncher.launch(fgLocationPermissions)
-    }
-
-    private val fgLocationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-                if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == false) {
-                    launchFineLocationDialog()
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    } else {
-                        initMap()
-                    }
-                }
-            } else {
-                launchFineLocationDialog()
+        lifecycleScope.launch {
+            while (true) {
+                updateWeightedHeatmapData()
+                delay(UPDATE_DATA_DELAY_MS)
             }
         }
 
-    private fun launchFineLocationDialog() {
-        val fgLocationPermissions = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-
-        AlertDialog.Builder(this)
-            .setTitle("Permission Required")
-            .setMessage("Heatmap won't work properly without your precise location!")
-            .setPositiveButton("Ask Again") { dialog: DialogInterface, _: Int ->
-                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    fgLocationPermissionLauncher.launch(fgLocationPermissions)
-                } else {
-                    launchAppInfo()
-                }
-
-                dialog.dismiss()
-            }
-            .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
-                if (ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    } else {
-                        initMap()
-                    }
-                }
-
-                dialog.dismiss()
-            }
-            .create()
-            .show()
-    }
-
-    private fun launchAppInfo() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri: Uri = Uri.fromParts("package", packageName, null)
-        intent.data = uri
-        startActivity(intent)
-    }
-
-    private val bgLocationPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                initMap()
-            } else {
-                launchBgLocationDialog()
-            }
-        }
-
-    private fun launchBgLocationDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("Permission Required")
-            .setMessage("Heatmap won't work properly without knowing your location all the time!")
-            .setPositiveButton("Ask Again") { dialog: DialogInterface, _: Int ->
-                if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                    } else {
-                        initMap()
-                    }
-                } else {
-                    launchAppInfo()
-                }
-
-                dialog.dismiss()
-            }
-            .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
-                initMap()
-                dialog.dismiss()
-            }
-            .create()
-            .show()
-    }
-
-    private fun initMap() {
-//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        val mapFragment =
+        mapFragment =
             supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
-
-        val mapView = mapFragment.requireView()
-        gridRows = (mapView.height / 50.0).toInt()
-        gridCols = (mapView.width / 50.0).toInt()
-
         mapFragment.getMapAsync(this)
     }
 
-    private fun updateWeightedHeatmapData() {
-        val dbHelper = MyHearingDatabaseHelper(this)
-        val newData = dbHelper.getRecordsSince(mostRecentTimestamp)
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        mMap.setMaxZoomPreference(19.5f)
 
-        for (record in newData) {
-            val newTimestamp = record.first
-            val newLatLng = record.second
-            decibel = record.third
-            val newDbIntensity = decibel / MAX_DB_INTENSITY
+        val mapView = mapFragment.requireView()
+        gridRows = (mapView.height / CELL_SIZE_PX)
+        gridCols = (mapView.width / CELL_SIZE_PX)
 
-            if (newTimestamp > mostRecentTimestamp) {
-                mostRecentTimestamp = newTimestamp
-                lastLatLng = newLatLng
+        lifecycleScope.launch {
+            while (!latestLatLngInit || weightedHeatmapData.size == 0) {
+                delay(50L)
             }
 
-            if (latLngMap.containsKey(newLatLng)) {
-                weightedHeatmapData.removeIf {
-                    val tempLatLng = wllToLatLng(it)
-                    tempLatLng.latitude == newLatLng.latitude && tempLatLng.longitude == newLatLng.longitude
+            while (true) {
+                updateAveragedHeatmapData()
+
+                withContext(Dispatchers.Main) {
+                    refreshHeatmap()
                 }
 
-                weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
-            } else {
-                latLngMap[newLatLng] = 1
-                weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
+                delay(REFRESH_HEATMAP_DELAY_MS)
             }
-        }
-
-        if (!lastLatLngInit && weightedHeatmapData.size > 0) {
-            startRefreshHeatmapRunnable()
-            lastLatLngInit = true
         }
     }
 
-    private fun getAveragedHeatmapData(): ArrayList<WeightedLatLng> {
-        val visibleRegionBounds = mMap.projection.visibleRegion.latLngBounds
-        val maxLatLng = visibleRegionBounds.northeast
-        val minLatLng = visibleRegionBounds.southwest
-
-        val cellSizeLat = (maxLatLng.latitude - minLatLng.latitude) / gridRows
-        val cellSizeLng = (maxLatLng.longitude - minLatLng.longitude) / gridCols
-
-        val cellIntensityMap: MutableMap<Pair<Int, Int>, ArrayList<Double>> = mutableMapOf()
-
-        for (wll in weightedHeatmapData) {
-            val latLng = wllToLatLng(wll)
-
-            val row = ((latLng.latitude - minLatLng.latitude) / cellSizeLat).toInt()
-            val col = ((latLng.longitude - minLatLng.longitude) / cellSizeLng).toInt()
-            val cell = Pair(row, col)
-
-            val cellIntensities = cellIntensityMap.getOrDefault(cell, ArrayList())
-            cellIntensities.add(wll.intensity)
-            cellIntensityMap[cell] = cellIntensities
+    private suspend fun updateWeightedHeatmapData() {
+        val newRecords = withContext(Dispatchers.IO) {
+            dbHelper.getRecordsSince(latestTimestamp)
         }
 
-        val averagedHeatmapData = ArrayList<WeightedLatLng>()
+        withContext(Dispatchers.Default) {
+            for (record in newRecords) {
+                val newTimestamp = record.first
+                val newLatLng = LatLng(
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude)
+                        .toDouble(),
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.longitude)
+                        .toDouble(),
+                )
 
-        for ((cell, cellIntensities) in cellIntensityMap) {
-            val cellCentreLat = minLatLng.latitude + (cell.first + 0.5) * cellSizeLat
-            val cellCentreLng = minLatLng.longitude + (cell.second + 0.5) * cellSizeLng
+                val dbReading = record.third.coerceIn(0.0, 300.0)
+                val newDbIntensity = (dbReading / MAX_DB_INTENSITY).coerceAtMost(1.0)
 
-            val cellCentre = LatLng(
-                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(cellCentreLat).toDouble(),
-                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(cellCentreLng).toDouble(),
+                if (newTimestamp > latestTimestamp) {
+                    latestTimestamp = newTimestamp
+                    latestLatLng = newLatLng
+
+                    withContext(Dispatchers.Main) {
+                        binding.heatmapTvDecibelReading.text =
+                            getString(R.string.heatmap_tvDecibelReading_text, dbReading.toInt())
+                    }
+
+                    if (!latestLatLngInit) {
+                        latestLatLngInit = true
+                    }
+                }
+
+                weightedHeatmapDataMutex.withLock {
+                    if (latLngMap.containsKey(newLatLng)) {
+                        weightedHeatmapData.removeIf {
+                            newLatLng.latitude == it.lat && newLatLng.longitude == it.lng && newTimestamp > it.time
+                        }
+                    } else {
+                        latLngMap[newLatLng] = 1
+                    }
+
+                    weightedHeatmapData.add(
+                        WeightedLocation(
+                            newLatLng,
+                            newDbIntensity,
+                            newTimestamp
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun updateAveragedHeatmapData() {
+        val visibleRegionBounds = withContext(Dispatchers.Main) {
+            mMap.projection.visibleRegion.latLngBounds
+        }
+
+        withContext(Dispatchers.Default) {
+            val maxLatLng = visibleRegionBounds.northeast
+            val minLatLng = visibleRegionBounds.southwest
+
+            val cellSizeLat = (maxLatLng.latitude - minLatLng.latitude) / gridRows
+            val cellSizeLng = (maxLatLng.longitude - minLatLng.longitude) / gridCols
+
+            val cellIntensityMap: MutableMap<Pair<Int, Int>, ArrayList<Double>> = mutableMapOf()
+
+            weightedHeatmapDataMutex.withLock {
+                for (wloc in weightedHeatmapData) {
+                    val row = ((wloc.lat - minLatLng.latitude) / cellSizeLat).toInt()
+                    val col = ((wloc.lng - minLatLng.longitude) / cellSizeLng).toInt()
+                    val cell = Pair(row, col)
+
+                    val cellIntensities = cellIntensityMap.getOrDefault(cell, ArrayList())
+                    cellIntensities.add(wloc.intensity)
+                    cellIntensityMap[cell] = cellIntensities
+                }
+            }
+
+            val latLngRow = ((latestLatLng.latitude - minLatLng.latitude) / cellSizeLat).toInt()
+            val latLngCol = ((latestLatLng.longitude - minLatLng.longitude) / cellSizeLng).toInt()
+
+            val latLngCentreLat = minLatLng.latitude + (latLngRow + 0.5) * cellSizeLat
+            val latLngCentreLng = minLatLng.longitude + (latLngCol + 0.5) * cellSizeLng
+
+            latestAveragedLatLng = LatLng(
+                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(latLngCentreLat).toDouble(),
+                DecimalFormat(DEFAULT_LOCATION_PATTERN).format(latLngCentreLng).toDouble(),
             )
 
-            averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
-        }
+            averagedHeatmapDataMutex.withLock {
+                averagedHeatmapData = ArrayList()
 
-        return averagedHeatmapData
-    }
+                for ((cell, cellIntensities) in cellIntensityMap) {
+                    val cellCentreLat = minLatLng.latitude + (cell.first + 0.5) * cellSizeLat
+                    val cellCentreLng = minLatLng.longitude + (cell.second + 0.5) * cellSizeLng
 
-    private fun startRefreshHeatmapRunnable() {
-        val refreshHeatmapRunnable = object : Runnable {
-            override fun run() {
-                refreshHeatmap(getAveragedHeatmapData())
-                handler.postDelayed(this, 1000L)
+                    val cellCentre = LatLng(
+                        DecimalFormat(DEFAULT_LOCATION_PATTERN).format(cellCentreLat).toDouble(),
+                        DecimalFormat(DEFAULT_LOCATION_PATTERN).format(cellCentreLng).toDouble(),
+                    )
+
+                    averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
+                }
             }
         }
-
-        handler.post(refreshHeatmapRunnable)
     }
 
-    private fun startUpdateDataRunnable() {
-        val updateDataRunnable = object : Runnable {
-            override fun run() {
-                updateWeightedHeatmapData()
-                handler2.postDelayed(this, 2500L)
+    private suspend fun refreshHeatmap() {
+        averagedHeatmapDataMutex.withLock {
+            if (!providerBuilt) {
+                provider = HeatmapTileProvider.Builder()
+                    .weightedData(averagedHeatmapData)
+                    .gradient(Gradient(GRADIENT_COLORS, GRADIENT_START_POINTS))
+                    .maxIntensity(PROVIDER_MAX_INTENSITY)
+                    .radius(PROVIDER_RADIUS)
+                    .build()
+
+                providerBuilt = true
+            } else {
+                provider.setWeightedData(averagedHeatmapData)
             }
-        }
-
-        handler2.post(updateDataRunnable)
-    }
-
-    private fun refreshHeatmap(averagedHeatmapData: ArrayList<WeightedLatLng>) {
-        findViewById<TextView>(R.id.heatmap_tvDecibelLevel).text =
-            "Decibel Level: ${decibel.toInt()}"
-        val zoomLevel = mMap.cameraPosition.zoom
-        findViewById<TextView>(R.id.heatmap_tvZoomLevel).text = "Zoom Level: $zoomLevel"
-
-        if (!providerBuilt) {
-            provider = HeatmapTileProvider.Builder()
-                .weightedData(averagedHeatmapData)
-                .gradient(Gradient(GRADIENT_COLORS, GRADIENT_START_POINTS))
-                .maxIntensity(PROVIDER_MAX_INTENSITY)
-                .radius(PROVIDER_RADIUS)
-                .build()
-
-            providerBuilt = true
-        } else {
-            provider.setWeightedData(averagedHeatmapData)
         }
 
         mMap.clear()
         mMap.addTileOverlay(TileOverlayOptions().tileProvider(provider))
-        mMap.addMarker(MarkerOptions().position(lastLatLng).title("Current Location"))
+        mMap.addMarker(MarkerOptions().position(latestAveragedLatLng).title("Current Location"))
 
         if (!mapCentred) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastLatLng, DEFAULT_ZOOM_LEVEL))
+            mMap.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                    latestLatLng,
+                    DEFAULT_ZOOM_LEVEL
+                )
+            )
             mapCentred = true
         }
-    }
-
-    private fun wllToLatLng(wll: WeightedLatLng): LatLng {
-        val tau = 2.0 * Math.PI
-
-        val lat = toDegrees(2.0 * (atan(Math.E.pow(tau * (0.5 - wll.point.y))) - (Math.PI / 4.0)))
-        val lng = toDegrees(tau * (wll.point.x - 0.5))
-
-        return LatLng(
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lat).toDouble(),
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lng).toDouble()
-        )
     }
 }

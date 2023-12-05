@@ -8,5 +8,9 @@
     <string name="calibration_tvTimer_default_text">00:10</string>
     <string name="calibration_btnTimerControl_default_text">START</string>
     <string name="calibration_tvInfoTitle_text">Microphone Calibration Instructions:</string>
-    <string name="calibration_tvInfoDetails_text">\n\tStep 1. Find a silent area\n\tStep 2. Press START when you are ready to begin\n\tStep 3. Remain silent for 10 seconds\n\n\tNote: Press CANCEL to stop calibration</string>
+    <string name="calibration_tvInfoDetails_text">\n\tStep 1: Find a silent area\n\tStep 2: Press START when you are ready to begin\n\tStep 3: Remain silent for 10 seconds\n\n\tNote: Press CANCEL to stop calibration</string>
+    <string name="heatmap_tvDecibelReading_text">Latest Decibel Reading: %1$d dB</string>
+    <string name="calibration_btnTimerControl_start">START</string>
+    <string name="calibration_tvTimer_text">00:%1$s</string>
+    <string name="calibration_btnTimerControl_cancel">CANCEL</string>
 </resources>
