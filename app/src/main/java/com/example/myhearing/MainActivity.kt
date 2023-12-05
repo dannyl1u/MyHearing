@@ -61,8 +61,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var horizontalProgressBar: ProgressBar
 
-
-
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,33 +110,32 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
         noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
         settingsButton = findViewById(R.id.settingsButton)
 
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
         Log.d("MainActivity", currentMode.toString())
-
         setLayoutForCurrentMode()
 
         settingsButton.setOnClickListener {
           val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
-
-        // Initialize chart
-        initChart()
-        chartUpdateHandler.post(chartUpdateRunnable)
-
+        // Start recording service if permission is granted
         if (checkPermission()) {
             startLocationAndNoiseService()
         } else {
             requestPermission()
         }
-
+        // Initialize chart
+        initChart()
+        chartUpdateHandler.post(chartUpdateRunnable)
 
     }
+
+    /** Service implementation, transferred over from DecibelMeterActivity
+     */
     private val noiseLevelReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
 
@@ -148,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                 noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
             }
             val progress = noiseLevel.toInt().coerceIn(0, 100)
-           //  Update both ProgressBar's progress
+            // Update db meter in UI
             progressBar.progress = progress
             horizontalProgressBar.progress = progress
         }
@@ -207,7 +204,7 @@ class MainActivity : AppCompatActivity() {
     fun updateChartData() {
         val dbHelper = MyHearingDatabaseHelper(this)
         val records = dbHelper.getRecentDecibelRecords()
-
+        // Set color gradient for Linechart
         val startColor = Color.parseColor("#FF7F7F")
         val endColor = Color.WHITE
 
@@ -215,7 +212,6 @@ class MainActivity : AppCompatActivity() {
             GradientDrawable.Orientation.TOP_BOTTOM,
             intArrayOf(startColor, endColor)
         )
-
         dataEntries.clear()
 
         records.forEachIndexed { index, pair ->
@@ -224,12 +220,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val dataSet = LineDataSet(dataEntries, "Decibel Level")
+        // Fill in bottom part of linechart
         dataSet.setDrawFilled(true)
         dataSet.fillDrawable = gradientDrawable
 
         chart.data = LineData(dataSet)
-
-
         chart.data.notifyDataChanged()
         chart.notifyDataSetChanged()
         chart.invalidate()
@@ -242,7 +237,6 @@ class MainActivity : AppCompatActivity() {
             chartUpdateHandler.postDelayed(this, 1000)
         }
     }
-
     private fun requestPermissions() {
         val baseFgPermissions = arrayOf(
             Manifest.permission.RECORD_AUDIO,
@@ -258,14 +252,12 @@ class MainActivity : AppCompatActivity() {
 
         fgPermissionLauncher.launch(fgPermissions)
     }
-
     private fun hasPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
             permission
         ) == PackageManager.PERMISSION_GRANTED
     }
-
     private val fgPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
             val hasAudio = hasPermission(Manifest.permission.RECORD_AUDIO)
@@ -284,7 +276,6 @@ class MainActivity : AppCompatActivity() {
                 launchFgDialog()
             }
         }
-
     private fun launchFineLocationDialog() {
         val fgLocationPermissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -300,7 +291,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     launchAppInfo()
                 }
-
                 dialog.dismiss()
             }
             .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
@@ -309,13 +299,11 @@ class MainActivity : AppCompatActivity() {
                         bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     }
                 }
-
                 dialog.dismiss()
             }
             .create()
             .show()
     }
-
     private fun launchAudioDialog() {
         AlertDialog.Builder(this)
             .setTitle("Permission Required")
@@ -326,20 +314,17 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     launchAppInfo()
                 }
-
                 dialog.dismiss()
             }
             .setNegativeButton("Deny Anyway") { dialog: DialogInterface, _: Int ->
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     bgLocationPermissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }
-
                 dialog.dismiss()
             }
             .create()
             .show()
     }
-
     private fun launchFgDialog() {
         val fgPermissions = arrayOf(
             Manifest.permission.RECORD_AUDIO,
@@ -411,30 +396,22 @@ class MainActivity : AppCompatActivity() {
         // Set the content view based on the current mode
         when (currentMode) {
             MainActivity.Mode.NUMBER -> {
-               // setContentView(R.layout.activity_dm_number)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
-
                 progressBar.visibility = View.GONE
                 horizontalProgressBar.visibility = View.GONE
             }
-
             MainActivity.Mode.GAUGE -> {
-           //     setContentView(R.layout.activity_dm_circular)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.VISIBLE
                 horizontalProgressBar.visibility = View.GONE
-
             }
-
             MainActivity.Mode.HORIZONTALGAUGE -> {
-           //     setContentView(R.layout.activity_dm_horizontal)
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
                 horizontalProgressBar.visibility = View.VISIBLE
-
             }
         }
     }
@@ -446,26 +423,12 @@ class MainActivity : AppCompatActivity() {
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
     }
-
-    override fun onDestroy() {
-        stopSoundCheckRunnable()
-        super.onDestroy()
-        audioRecord?.stop()
-        audioRecord?.release()
-    }
-
-    // Release AudioRecord to prevent crashing upon finish()
-    private fun stopSoundCheckRunnable() {
-        handler.removeCallbacksAndMessages(null)
-    }
-
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
     }
-
     private fun requestPermission() {
         ActivityCompat.requestPermissions(
             this,
@@ -473,5 +436,14 @@ class MainActivity : AppCompatActivity() {
             RECORD_AUDIO_PERMISSION_CODE
         )
     }
-
+    override fun onDestroy() {
+        stopSoundCheckRunnable()
+        super.onDestroy()
+        audioRecord?.stop()
+        audioRecord?.release()
+    }
+    // Release AudioRecord to prevent crashing upon finish()
+    private fun stopSoundCheckRunnable() {
+        handler.removeCallbacksAndMessages(null)
+    }
 }
