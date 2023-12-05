@@ -205,7 +205,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
             withContext(Dispatchers.Main) {
                 binding.heatmapTvDecibelReading.text =
-                    getString(R.string.heatmap_tvDecibelReading_text, latestDbReading)
+                    getString(R.string.tvDecibelLevel_text, latestDbReading)
             }
         }
     }

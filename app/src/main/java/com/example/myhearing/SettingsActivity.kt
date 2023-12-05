@@ -8,7 +8,6 @@ import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 
 class SettingsActivity : AppCompatActivity() {
-
     private lateinit var modeSpinner: Spinner
     private lateinit var applySettingsButton: Button
 
@@ -32,17 +31,11 @@ class SettingsActivity : AppCompatActivity() {
     private fun applySettings() {
         val selectedMode = modeSpinner.selectedItem.toString()
 
-
-        // Save via SharedPreferences
-        val sharedPreferences = getSharedPreferences("Settings", 0)
-        val editor = sharedPreferences.edit()
-        editor.putString("selectedMode", selectedMode)
-        editor.apply()
+        val prefs = getSharedPreferences("Settings", 0)
+        prefs.edit().putString("selectedMode", selectedMode).apply()
 
         val intent = Intent(this, MainActivity::class.java)
-
         intent.putExtra("selectedMode", selectedMode)
-
         startActivity(intent)
 
         finish()
