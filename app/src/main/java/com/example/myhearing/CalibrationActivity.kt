@@ -97,7 +97,7 @@ class CalibrationActivity : AppCompatActivity() {
         super.onDestroy()
 
         if (isCalibrating) {
-            resetTimer("Calibration canceled")
+            resetTimer(true)
         }
 
         audioRecord?.release()
@@ -181,7 +181,7 @@ class CalibrationActivity : AppCompatActivity() {
                         if (repeatsLeft > 0) {
                             binding.calibrationTvTimer.startAnimation(tvAnimation)
                         } else {
-                            resetTimer()
+                            resetTimer(false)
                         }
                     }
                 }
@@ -220,7 +220,7 @@ class CalibrationActivity : AppCompatActivity() {
     fun onTimerControlClick(view: View) {
         if (hasRecordAudioPermission()) {
             if (isCalibrating) {
-                resetTimer("Calibration canceled")
+                resetTimer(true)
             } else {
                 isCalibrating = true
                 startCalibrationTimer()
@@ -230,7 +230,7 @@ class CalibrationActivity : AppCompatActivity() {
         }
     }
 
-    private fun resetTimer(toastText: String? = null) {
+    private fun resetTimer(isCanceled: Boolean) {
         cdt.cancel()
         audioRecord?.stop()
 
@@ -247,8 +247,8 @@ class CalibrationActivity : AppCompatActivity() {
         animationShouldStop = true
         isCalibrating = false
 
-        if (toastText != null) {
-            showToast(toastText)
+        if (isCanceled) {
+            showToast("Calibration canceled")
         }
     }
 

@@ -134,16 +134,16 @@ class LocationAndNoiseService : Service(), CoroutineScope {
         launch {
             var elapsedTime = 0L
             val apiUpdateInterval = 5000L
-            val broadcastInterval = 1000L
+            val broadcastInterval = 500L
 
             while (isActive) {
                 trackNoiseLevel()
 
                 if (elapsedTime >= apiUpdateInterval) {
                     sendLocationAndNoiseData()
-                    saveDataToDatabase()
                     elapsedTime = 0
                 } else {
+                    saveDataToDatabase()
                     elapsedTime += broadcastInterval
                 }
 
@@ -153,11 +153,11 @@ class LocationAndNoiseService : Service(), CoroutineScope {
     }
 
     private fun trackLocation() {
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
             .apply {
                 setWaitForAccurateLocation(false)
-                setMinUpdateIntervalMillis(1000)
-                setMaxUpdateDelayMillis(1000)
+                setMinUpdateIntervalMillis(500)
+                setMaxUpdateDelayMillis(500)
             }.build()
 
         try {

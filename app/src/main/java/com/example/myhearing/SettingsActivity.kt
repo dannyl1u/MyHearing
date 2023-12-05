@@ -18,7 +18,6 @@ class SettingsActivity : AppCompatActivity() {
         modeSpinner = findViewById(R.id.spinnerMode)
         applySettingsButton = findViewById(R.id.applyButton)
 
-        // Use spinner to determine UI
         val modeOptions = arrayOf("Number", "Circular Gauge", "Horizontal Gauge")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modeOptions)
         modeSpinner.adapter = adapter

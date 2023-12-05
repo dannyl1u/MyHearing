@@ -74,18 +74,22 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                     startActivity(Intent(this, MainActivity::class.java))
                     true
                 }
+
                 R.id.nav_item2 -> {
                     startActivity(Intent(this, HeatmapActivity::class.java))
                     true
                 }
+
                 R.id.nav_item3 -> {
                     startActivity(Intent(this, TestHearing::class.java))
                     true
                 }
+
                 R.id.nav_item4 -> {
                     startActivity(Intent(this, CalibrationActivity::class.java))
                     true
                 }
+
                 else -> false
             }
         }
@@ -189,10 +193,12 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                 leftEar.alpha = 1f
                 rightEar.alpha = 0.2f
             }
+
             "right" -> {
                 rightEar.alpha = 1f
                 leftEar.alpha = 0.2f
             }
+
             else -> {
                 leftEar.alpha = 0.2f
                 rightEar.alpha = 0.2f
@@ -368,7 +374,7 @@ class ResultFragment : DialogFragment() {
         leftEarTV.text = "Left Ear:\n$leftScore%"
         rightEarTV.text = "Right Ear:\n$rightScore%"
 
-        var overallScore = (leftScore + rightScore) / 2
+        val overallScore = (leftScore + rightScore) / 2
         if (overallScore >= 66.66) {
             // Green: pretty good
             overallTV.text = "Overall:$overallScore%\nPretty Good!"

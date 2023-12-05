@@ -25,7 +25,8 @@
         app:layout_constraintBottom_toTopOf="@+id/space"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/messageTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/messageTextView"
+        android:importantForAccessibility="no" />
 
     <TextView
         android:id="@+id/leftEar"
@@ -52,7 +53,7 @@
         android:gravity="center_horizontal"
         android:text="Overall:"
         android:textColor="#303030"
-        android:textSize="20dp"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/resultFace"
 

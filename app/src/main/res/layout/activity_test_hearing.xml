@@ -5,7 +5,6 @@
     android:id="@+id/testHearing_drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
     tools:context=".TestHearing"
     tools:viewBindingIgnore="false">
 
@@ -31,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Press start, listen to the audio, \nthen select the appropriate image."
-                android:textSize="20dp"
+                android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@+id/gridLayout"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -71,6 +70,8 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
                     android:src="@drawable/dog" />
@@ -83,6 +84,8 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
                     android:src="@drawable/cat" />
@@ -95,6 +98,8 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
                     android:src="@drawable/car" />
@@ -107,6 +112,8 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
                     android:src="@drawable/king" />
@@ -119,6 +126,8 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
                     android:src="@drawable/queen" />
@@ -131,9 +140,11 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/jar" />
+                    android:src="@drawable/jar"
+                    android:importantForAccessibility="no" />
 
                 <ImageView
                     android:id="@+id/frog"
@@ -143,9 +154,11 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/frog" />
+                    android:src="@drawable/frog"
+                    android:importantForAccessibility="no" />
 
                 <ImageView
                     android:id="@+id/door"
@@ -155,9 +168,11 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/door" />
+                    android:src="@drawable/door"
+                    android:importantForAccessibility="no" />
 
                 <ImageView
                     android:id="@+id/rat"
@@ -167,9 +182,11 @@
                     android:layout_columnWeight="1"
                     android:layout_gravity="fill"
                     android:clickable="true"
+                    android:focusable="true"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/rat" />
+                    android:src="@drawable/rat"
+                    android:importantForAccessibility="no" />
 
             </GridLayout>
 
