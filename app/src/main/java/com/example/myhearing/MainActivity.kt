@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -30,6 +31,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.services.LocationAndNoiseService
@@ -40,6 +42,10 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -61,10 +67,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var horizontalProgressBar: ProgressBar
 
+    private lateinit var prefs: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        prefs = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE)
         requestPermissions()
 
         // Initialize UI components
@@ -169,6 +178,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                if (prefs.getBoolean("app_info_return", false)) {
+                    prefs.edit().putBoolean("app_info_return", false).apply()
+
+                    delay(100L)
+                    requestPermissions()
+                }
+            }
+        }
 
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START, false)
@@ -367,6 +387,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun launchAppInfo() {
+        val editor = getSharedPreferences("com.example.myhearing", Context.MODE_PRIVATE).edit()
+        editor.putBoolean("app_info_return", true)
+        editor.apply()
+
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
         val uri: Uri = Uri.fromParts("package", packageName, null)
         intent.data = uri
