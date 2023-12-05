@@ -1,12 +1,17 @@
 package com.example.myhearing
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioRecord
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -14,13 +19,20 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.view.View
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.myhearing.data.MyHearingDatabaseHelper
+import com.example.myhearing.services.LocationAndNoiseService
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -38,7 +50,22 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var chart: LineChart
     private var dataEntries: ArrayList<Entry> = ArrayList()
+    private lateinit var decibelMeterLayout: View
 
+    private val RECORD_AUDIO_PERMISSION_CODE = 123
+    private var audioRecord: AudioRecord? = null
+    private lateinit var noiseLevelTextView: TextView
+    private lateinit var settingsButton: Button
+    private lateinit var backButton: Button
+    private val handler = Handler(Looper.getMainLooper())
+
+    private var currentMode = MainActivity.Mode.NUMBER
+    private lateinit var progressBar: ProgressBar
+    private lateinit var horizontalProgressBar: ProgressBar
+
+
+
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -94,18 +121,64 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        decibelMeterLayout = findViewById(R.id.decibelMeterLayout)
+        noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
+        settingsButton = findViewById(R.id.settingsButton)
+        val intentMode = intent.getStringExtra("selectedMode")
+        currentMode = convertStringToMode(intentMode ?: "Number")
+        Log.d("DecibelMeterActivity", currentMode.toString())
+        setLayoutForCurrentMode()
+
+        settingsButton.setOnClickListener {
+          val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+        }
+
         // Initialize chart
         initChart()
         chartUpdateHandler.post(chartUpdateRunnable)
+
+        if (checkPermission()) {
+            startLocationAndNoiseService()
+        } else {
+            requestPermission()
+        }
+
+
+    }
+    private val noiseLevelReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+
+            val noiseLevel = intent?.getFloatExtra("noise_level", 0.0f) ?: 0.0f
+            Log.d("DecibelMeterActivity", "Received Decibel Level: $noiseLevel dB")
+            if (noiseLevel.toInt() >= 0) {
+                noiseLevelTextView.text = "Decibel Level: ${noiseLevel.toInt()} dB"
+            }
+            val progress = noiseLevel.toInt().coerceIn(0, 100)
+           //  Update both ProgressBar's progress
+            progressBar.progress = progress
+            horizontalProgressBar.progress = progress
+        }
+    }
+    private fun startLocationAndNoiseService() {
+        val serviceIntent = Intent(this, LocationAndNoiseService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
 
     override fun onPause() {
         super.onPause()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(noiseLevelReceiver)
         chartUpdateHandler.removeCallbacks(chartUpdateRunnable)
     }
 
     override fun onResume() {
         super.onResume()
+        val filter = IntentFilter("com.example.myhearing.NOISE_LEVEL_UPDATE")
+        LocalBroadcastManager.getInstance(this).registerReceiver(noiseLevelReceiver, filter)
         chartUpdateHandler.post(chartUpdateRunnable)
     }
 
@@ -337,4 +410,75 @@ class MainActivity : AppCompatActivity() {
             .create()
             .show()
     }
+
+    private enum class Mode {
+        NUMBER, GAUGE, HORIZONTALGAUGE
+    }
+    private fun setLayoutForCurrentMode() {
+        // Set the content view based on the current mode
+        when (currentMode) {
+            MainActivity.Mode.NUMBER -> {
+               // setContentView(R.layout.activity_dm_number)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+
+                progressBar.visibility = View.GONE
+                horizontalProgressBar.visibility = View.GONE
+            }
+
+            MainActivity.Mode.GAUGE -> {
+           //     setContentView(R.layout.activity_dm_circular)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+                progressBar.visibility = View.VISIBLE
+                horizontalProgressBar.visibility = View.GONE
+
+            }
+
+            MainActivity.Mode.HORIZONTALGAUGE -> {
+           //     setContentView(R.layout.activity_dm_horizontal)
+                progressBar = findViewById(R.id.progressBar)
+                horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
+                progressBar.visibility = View.GONE
+                horizontalProgressBar.visibility = View.VISIBLE
+
+            }
+        }
+    }
+    private fun convertStringToMode(modeString: String): MainActivity.Mode {
+        return when (modeString) {
+            "Number" -> MainActivity.Mode.NUMBER
+            "Gauge" -> MainActivity.Mode.GAUGE
+            "Horizontal Gauge" -> MainActivity.Mode.HORIZONTALGAUGE
+            else -> throw IllegalArgumentException("Invalid mode: $modeString")
+        }
+    }
+
+    override fun onDestroy() {
+        stopSoundCheckRunnable()
+        super.onDestroy()
+        audioRecord?.stop()
+        audioRecord?.release()
+    }
+
+    // Release AudioRecord to prevent crashing upon finish()
+    private fun stopSoundCheckRunnable() {
+        handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun checkPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            RECORD_AUDIO_PERMISSION_CODE
+        )
+    }
+
 }
