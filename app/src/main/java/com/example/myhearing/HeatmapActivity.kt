@@ -2,9 +2,11 @@ package com.example.myhearing
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
+import com.example.myhearing.data.WeightedLocation
 import com.example.myhearing.databinding.ActivityHeatmapBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,10 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.lang.Math.toDegrees
 import java.text.DecimalFormat
-import kotlin.math.atan
-import kotlin.math.pow
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
@@ -36,7 +35,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         const val CELL_SIZE_PX = 40
         val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.YELLOW, Color.RED)
         val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.6f, 0.85f)
-        const val PROVIDER_MAX_INTENSITY = 2.5
+        const val PROVIDER_MAX_INTENSITY = 1.0
         const val PROVIDER_RADIUS = 50
         const val DEFAULT_ZOOM_LEVEL = 19f
     }
@@ -55,7 +54,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private var latestLatLngInit = false
 
     private val latLngMap: MutableMap<LatLng, Int> = mutableMapOf()
-    private val weightedHeatmapData = ArrayList<WeightedLatLng>()
+    private val weightedHeatmapData = ArrayList<WeightedLocation>()
     private var averagedHeatmapData = ArrayList<WeightedLatLng>()
     private var weightedHeatmapDataMutex = Mutex()
     private var averagedHeatmapDataMutex = Mutex()
@@ -117,7 +116,10 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         withContext(Dispatchers.Default) {
             for (record in newRecords) {
                 val newTimestamp = record.first
-                val newLatLng = record.second
+                val newLatLng = LatLng(
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude).toDouble(),
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.longitude).toDouble(),
+                )
 
                 val dbReading = record.third.coerceIn(0.0, 300.0)
                 val newDbIntensity = (dbReading / MAX_DB_INTENSITY).coerceAtMost(1.0)
@@ -139,15 +141,19 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 weightedHeatmapDataMutex.withLock {
                     if (latLngMap.containsKey(newLatLng)) {
                         weightedHeatmapData.removeIf {
-                            val tempLatLng = wllToLatLng(it)
-                            tempLatLng.latitude == newLatLng.latitude && tempLatLng.longitude == newLatLng.longitude
+                            newLatLng.latitude == it.lat && newLatLng.longitude == it.lng && newTimestamp > it.time
                         }
-
-                        weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
                     } else {
                         latLngMap[newLatLng] = 1
-                        weightedHeatmapData.add(WeightedLatLng(newLatLng, newDbIntensity))
                     }
+
+                    weightedHeatmapData.add(
+                        WeightedLocation(
+                            newLatLng,
+                            newDbIntensity,
+                            newTimestamp
+                        )
+                    )
                 }
             }
         }
@@ -168,15 +174,13 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             val cellIntensityMap: MutableMap<Pair<Int, Int>, ArrayList<Double>> = mutableMapOf()
 
             weightedHeatmapDataMutex.withLock {
-                for (wll in weightedHeatmapData) {
-                    val latLng = wllToLatLng(wll)
-
-                    val row = ((latLng.latitude - minLatLng.latitude) / cellSizeLat).toInt()
-                    val col = ((latLng.longitude - minLatLng.longitude) / cellSizeLng).toInt()
+                for (wloc in weightedHeatmapData) {
+                    val row = ((wloc.lat - minLatLng.latitude) / cellSizeLat).toInt()
+                    val col = ((wloc.lng - minLatLng.longitude) / cellSizeLng).toInt()
                     val cell = Pair(row, col)
 
                     val cellIntensities = cellIntensityMap.getOrDefault(cell, ArrayList())
-                    cellIntensities.add(wll.intensity)
+                    cellIntensities.add(wloc.intensity)
                     cellIntensityMap[cell] = cellIntensities
                 }
             }
@@ -206,6 +210,8 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     averagedHeatmapData.add(WeightedLatLng(cellCentre, cellIntensities.average()))
                 }
+
+                Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
             }
         }
     }
@@ -239,17 +245,5 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
             )
             mapCentred = true
         }
-    }
-
-    private fun wllToLatLng(wll: WeightedLatLng): LatLng {
-        val tau = 2.0 * Math.PI
-
-        val lat = toDegrees(2.0 * (atan(Math.E.pow(tau * (0.5 - wll.point.y))) - (Math.PI / 4.0)))
-        val lng = toDegrees(tau * (wll.point.x - 0.5))
-
-        return LatLng(
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lat).toDouble(),
-            DecimalFormat(DEFAULT_LOCATION_PATTERN).format(lng).toDouble()
-        )
     }
 }
