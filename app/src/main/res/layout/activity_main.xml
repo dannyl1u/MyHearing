@@ -43,15 +43,15 @@
 
             <FrameLayout
                 android:layout_width="400dp"
-                android:layout_height="150dp"
-                android:layout_marginBottom="10dp">
+                android:layout_height="100dp"
+               >
 
                 <!-- The first ProgressBar -->
                 <ProgressBar
                     android:id="@+id/progressBar"
                     style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="150dp"
-                    android:layout_height="150dp"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
                     android:layout_gravity="center"
                     android:indeterminate="false"
                     android:max="100"
