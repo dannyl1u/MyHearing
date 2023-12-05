@@ -50,13 +50,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var chart: LineChart
     private var dataEntries: ArrayList<Entry> = ArrayList()
-    private lateinit var decibelMeterLayout: View
 
     private val RECORD_AUDIO_PERMISSION_CODE = 123
     private var audioRecord: AudioRecord? = null
     private lateinit var noiseLevelTextView: TextView
     private lateinit var settingsButton: Button
-    private lateinit var backButton: Button
     private val handler = Handler(Looper.getMainLooper())
 
     private var currentMode = MainActivity.Mode.NUMBER
@@ -121,12 +119,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        decibelMeterLayout = findViewById(R.id.decibelMeterLayout)
         noiseLevelTextView = findViewById(R.id.tvDecibelLevel)
         settingsButton = findViewById(R.id.settingsButton)
+
         val intentMode = intent.getStringExtra("selectedMode")
         currentMode = convertStringToMode(intentMode ?: "Number")
         Log.d("DecibelMeterActivity", currentMode.toString())
+
         setLayoutForCurrentMode()
 
         settingsButton.setOnClickListener {
@@ -448,7 +447,7 @@ class MainActivity : AppCompatActivity() {
     private fun convertStringToMode(modeString: String): MainActivity.Mode {
         return when (modeString) {
             "Number" -> MainActivity.Mode.NUMBER
-            "Gauge" -> MainActivity.Mode.GAUGE
+            "Circular Gauge" -> MainActivity.Mode.GAUGE
             "Horizontal Gauge" -> MainActivity.Mode.HORIZONTALGAUGE
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
