@@ -2,7 +2,6 @@ package com.example.myhearing
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
@@ -226,8 +225,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 provider.setWeightedData(averagedHeatmapData)
             }
         }
-
-        Log.e("averaged data", averagedHeatmapData.map { it.intensity }.toString())
 
         mMap.clear()
         mMap.addTileOverlay(TileOverlayOptions().tileProvider(provider))
