@@ -2,6 +2,7 @@ package com.example.myhearing
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -14,13 +15,15 @@ import android.view.animation.Animation
 import android.view.animation.AnimationSet
 import android.view.animation.LinearInterpolator
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import com.example.myhearing.databinding.ActivityCalibrationBinding
 import kotlin.math.ceil
 import kotlin.math.pow
 
-class CalibrationActivity : ComponentActivity() {
+class CalibrationActivity : AppCompatActivity() {
     companion object {
         const val RECORD_DURATION_MS = 10000L
         const val RECORD_UPDATE_INTERVAL_MS = 250L
@@ -41,8 +44,53 @@ class CalibrationActivity : ComponentActivity() {
 
         binding = ActivityCalibrationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.calibrationToolbar)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            binding.calibrationDrawerLayout,
+            binding.calibrationToolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+        binding.calibrationDrawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        binding.calibrationNavigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_item1 -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item2 -> {
+                    startActivity(Intent(this, HeatmapActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item3 -> {
+                    startActivity(Intent(this, TestHearing::class.java))
+                    true
+                }
+
+                R.id.nav_item4 -> {
+                    startActivity(Intent(this, CalibrationActivity::class.java))
+                    true
+                }
+
+                else -> false
+            }
+        }
 
         initAudioRecord()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (binding.calibrationDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.calibrationDrawerLayout.closeDrawer(GravityCompat.START, false)
+        }
     }
 
     override fun onDestroy() {

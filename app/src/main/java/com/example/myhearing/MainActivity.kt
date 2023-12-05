@@ -1,7 +1,6 @@
 package com.example.myhearing
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -29,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.myhearing.data.MyHearingDatabaseHelper
@@ -57,11 +57,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var settingsButton: Button
     private val handler = Handler(Looper.getMainLooper())
 
-    private var currentMode = MainActivity.Mode.NUMBER
+    private var currentMode = Mode.NUMBER
     private lateinit var progressBar: ProgressBar
     private lateinit var horizontalProgressBar: ProgressBar
 
-    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -89,21 +88,23 @@ class MainActivity : AppCompatActivity() {
         // Navigation items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
+                R.id.nav_item1 -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+
                 R.id.nav_item2 -> {
-                    val intent = Intent(this, HeatmapActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, HeatmapActivity::class.java))
                     true
                 }
 
                 R.id.nav_item3 -> {
-                    val intent = Intent(this, TestHearing::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, TestHearing::class.java))
                     true
                 }
 
                 R.id.nav_item4 -> {
-                    val intent = Intent(this, CalibrationActivity::class.java)
-                    startActivity(intent)
+                    startActivity(Intent(this, CalibrationActivity::class.java))
                     true
                 }
 
@@ -119,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         setLayoutForCurrentMode()
 
         settingsButton.setOnClickListener {
-          val intent = Intent(this, SettingsActivity::class.java)
+            val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
         }
         // Start recording service if permission is granted
@@ -150,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             horizontalProgressBar.progress = progress
         }
     }
+
     private fun startLocationAndNoiseService() {
         val serviceIntent = Intent(this, LocationAndNoiseService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -167,6 +169,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START, false)
+        }
+
         val filter = IntentFilter("com.example.myhearing.NOISE_LEVEL_UPDATE")
         LocalBroadcastManager.getInstance(this).registerReceiver(noiseLevelReceiver, filter)
         chartUpdateHandler.post(chartUpdateRunnable)
@@ -237,6 +244,7 @@ class MainActivity : AppCompatActivity() {
             chartUpdateHandler.postDelayed(this, 1000)
         }
     }
+
     private fun requestPermissions() {
         val baseFgPermissions = arrayOf(
             Manifest.permission.RECORD_AUDIO,
@@ -252,12 +260,14 @@ class MainActivity : AppCompatActivity() {
 
         fgPermissionLauncher.launch(fgPermissions)
     }
+
     private fun hasPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
             permission
         ) == PackageManager.PERMISSION_GRANTED
     }
+
     private val fgPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { _ ->
             val hasAudio = hasPermission(Manifest.permission.RECORD_AUDIO)
@@ -276,6 +286,7 @@ class MainActivity : AppCompatActivity() {
                 launchFgDialog()
             }
         }
+
     private fun launchFineLocationDialog() {
         val fgLocationPermissions = arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -304,6 +315,7 @@ class MainActivity : AppCompatActivity() {
             .create()
             .show()
     }
+
     private fun launchAudioDialog() {
         AlertDialog.Builder(this)
             .setTitle("Permission Required")
@@ -325,6 +337,7 @@ class MainActivity : AppCompatActivity() {
             .create()
             .show()
     }
+
     private fun launchFgDialog() {
         val fgPermissions = arrayOf(
             Manifest.permission.RECORD_AUDIO,
@@ -392,22 +405,25 @@ class MainActivity : AppCompatActivity() {
     private enum class Mode {
         NUMBER, GAUGE, HORIZONTALGAUGE
     }
+
     private fun setLayoutForCurrentMode() {
         // Set the content view based on the current mode
         when (currentMode) {
-            MainActivity.Mode.NUMBER -> {
+            Mode.NUMBER -> {
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
                 horizontalProgressBar.visibility = View.GONE
             }
-            MainActivity.Mode.GAUGE -> {
+
+            Mode.GAUGE -> {
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.VISIBLE
                 horizontalProgressBar.visibility = View.GONE
             }
-            MainActivity.Mode.HORIZONTALGAUGE -> {
+
+            Mode.HORIZONTALGAUGE -> {
                 progressBar = findViewById(R.id.progressBar)
                 horizontalProgressBar = findViewById(R.id.horizontalProgressBar)
                 progressBar.visibility = View.GONE
@@ -415,20 +431,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun convertStringToMode(modeString: String): MainActivity.Mode {
+
+    private fun convertStringToMode(modeString: String): Mode {
         return when (modeString) {
-            "Number" -> MainActivity.Mode.NUMBER
-            "Circular Gauge" -> MainActivity.Mode.GAUGE
-            "Horizontal Gauge" -> MainActivity.Mode.HORIZONTALGAUGE
+            "Number" -> Mode.NUMBER
+            "Circular Gauge" -> Mode.GAUGE
+            "Horizontal Gauge" -> Mode.HORIZONTALGAUGE
             else -> throw IllegalArgumentException("Invalid mode: $modeString")
         }
     }
+
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
     }
+
     private fun requestPermission() {
         ActivityCompat.requestPermissions(
             this,
@@ -436,12 +455,14 @@ class MainActivity : AppCompatActivity() {
             RECORD_AUDIO_PERMISSION_CODE
         )
     }
+
     override fun onDestroy() {
         stopSoundCheckRunnable()
         super.onDestroy()
         audioRecord?.stop()
         audioRecord?.release()
     }
+
     // Release AudioRecord to prevent crashing upon finish()
     private fun stopSoundCheckRunnable() {
         handler.removeCallbacksAndMessages(null)

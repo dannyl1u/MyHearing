@@ -1,5 +1,6 @@
 package com.example.myhearing
 
+import android.content.Intent
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.net.Uri
@@ -14,10 +15,15 @@ import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.TextView
 import android.widget.VideoView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
+import com.example.myhearing.databinding.ActivityTestHearingBinding
 
 class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
+    private lateinit var binding: ActivityTestHearingBinding
+
     private lateinit var StartButton: Button
     private lateinit var leftEar: ImageView
     private lateinit var rightEar: ImageView
@@ -47,7 +53,47 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_test_hearing)
+
+        binding = ActivityTestHearingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.testHearingToolbar)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            binding.testHearingDrawerLayout,
+            binding.testHearingToolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+        binding.testHearingDrawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        binding.testHearingNavigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_item1 -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item2 -> {
+                    startActivity(Intent(this, HeatmapActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item3 -> {
+                    startActivity(Intent(this, TestHearing::class.java))
+                    true
+                }
+
+                R.id.nav_item4 -> {
+                    startActivity(Intent(this, CalibrationActivity::class.java))
+                    true
+                }
+
+                else -> false
+            }
+        }
+
         StartButton = findViewById(R.id.startButton)
         leftEar = findViewById(R.id.leftear)
         rightEar = findViewById(R.id.rightear)
@@ -73,6 +119,14 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         val headphoneFragment = EarPhoneFragment()
         headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (binding.testHearingDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.testHearingDrawerLayout.closeDrawer(GravityCompat.START, false)
+        }
     }
 
     private fun audioAndNoise(side: String) {

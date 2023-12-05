@@ -1,66 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/calibration_drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="16dp">
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/calibration_tvInfoTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/calibration_tvInfoTitle_text"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/calibration_tvInfoDetails"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/calibration_tvInfoDetails_text" />
-
-    </LinearLayout>
+    android:background="#FFFFFF"
+    tools:context=".CalibrationActivity"
+    tools:viewBindingIgnore="false">
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <ProgressBar
-            android:id="@+id/calibration_pbTimer"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="250dp"
-            android:layout_height="250dp"
-            android:layout_centerInParent="true"
-            android:background="@drawable/circular_timer_shape"
-            android:indeterminate="false"
-            android:max="100"
-            android:progress="100"
-            android:progressDrawable="@drawable/circular_timer_bar" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/calibration_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.AppCompat.Light" />
 
-        <TextView
-            android:id="@+id/calibration_tvTimer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/calibration_tvTimer_default_text"
-            android:textColor="@color/black"
-            android:textSize="40sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/calibration_tvInfoTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/calibration_tvInfoTitle_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/calibration_tvInfoDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/calibration_tvInfoDetails_text" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ProgressBar
+                    android:id="@+id/calibration_pbTimer"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/circular_timer_shape"
+                    android:indeterminate="false"
+                    android:max="100"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/circular_timer_bar" />
+
+                <TextView
+                    android:id="@+id/calibration_tvTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:text="@string/calibration_tvTimer_default_text"
+                    android:textColor="@color/black"
+                    android:textSize="40sp"
+                    android:textStyle="bold" />
+
+            </RelativeLayout>
+
+            <Button
+                android:id="@+id/calibration_btnTimerControl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="onTimerControlClick"
+                android:text="@string/calibration_btnTimerControl_default_text" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/calibration_btnTimerControl"
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/calibration_navigationView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onTimerControlClick"
-        android:text="@string/calibration_btnTimerControl_default_text" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@menu/menu_header"
+        app:menu="@menu/menu_drawer" />
 
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
