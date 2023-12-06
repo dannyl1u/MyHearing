@@ -17,6 +17,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.TileOverlayOptions
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.google.maps.android.heatmaps.Gradient
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
@@ -26,6 +28,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
 import java.text.DecimalFormat
 
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -65,6 +70,42 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var provider: HeatmapTileProvider
     private var providerBuilt = false
     private var mapCentred = false
+
+    private val httpClient = OkHttpClient()
+    private val gson = Gson()
+
+    private var lastApiCallTime = 0L
+    private val apiCallInterval = 5000L
+
+    private suspend fun fetchApiData(): List<Triple<Long, LatLng, Double>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val request = Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent").build()
+                httpClient.newCall(request).execute().use { response ->
+                    if (!response.isSuccessful) throw IOException("Unexpected code $response")
+
+                    val responseBody = response.body?.string()
+                    val apiData: List<ApiRecord> = gson.fromJson(responseBody, object : TypeToken<List<ApiRecord>>() {}.type)
+
+                    apiData.map { record ->
+                        val (lat, lng) = record.location.split(", ").map { it.toDouble() }
+                        val timestamp = record.timestamp.toLong()
+                        val noiseLevel = record.noise_level.toDouble()
+                        Triple(timestamp, LatLng(lat, lng), noiseLevel)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        }
+    }
+
+    data class ApiRecord(
+        val location: String,
+        val noise_level: Int,
+        val timestamp: String
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -157,12 +198,23 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private suspend fun updateWeightedHeatmapData() {
+        val currentTime = System.currentTimeMillis()
+
         val newRecords = withContext(Dispatchers.IO) {
             dbHelper.getRecordsSince(latestTimestamp)
         }
+        val apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
+            lastApiCallTime = currentTime
+            fetchApiData()
+        } else {
+            emptyList()
+        }
+
+        val combinedRecords = newRecords + apiRecords
+        println("Combined records: $combinedRecords")
 
         withContext(Dispatchers.Default) {
-            for (record in newRecords) {
+            for (record in combinedRecords) {
                 val newTimestamp = record.first
                 val newLatLng = LatLng(
                     DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude)
@@ -200,6 +252,15 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                             newTimestamp
                         )
                     )
+                }
+            }
+
+            // Gets user's latest decibel level to display on screen
+            for (localRecord in newRecords) {
+                val dbReading = localRecord.third.coerceIn(0.0, 300.0)
+                val newTimestamp = localRecord.first
+                if (newTimestamp > latestTimestamp) {
+                    latestDbReading = dbReading.toInt()
                 }
             }
 

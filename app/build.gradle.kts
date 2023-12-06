@@ -82,6 +82,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("org.json:json:20201115")
     implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.0.0")
+    implementation("com.google.code.gson:gson:2.8.2")
 
 }
 
