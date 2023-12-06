@@ -124,6 +124,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.heatmapDrawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        binding.heatmapNavigationView.itemIconTintList = null
         binding.heatmapNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {

@@ -56,6 +56,7 @@ class CalibrationActivity : AppCompatActivity() {
         binding.calibrationDrawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        binding.calibrationNavigationView.itemIconTintList = null
         binding.calibrationNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {
