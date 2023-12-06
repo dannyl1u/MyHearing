@@ -261,7 +261,12 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.ACCESS_FINE_LOCATION
         )
 
-        val fgPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        val fgPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            baseFgPermissions + arrayOf(
+                Manifest.permission.FOREGROUND_SERVICE,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             baseFgPermissions + arrayOf(Manifest.permission.FOREGROUND_SERVICE)
         } else {
             baseFgPermissions
