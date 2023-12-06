@@ -158,7 +158,14 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         lifecycleScope.launch {
             while (true) {
-                updateWeightedHeatmapData()
+                updateWeightedHeatmapDataLocal()
+                delay(UPDATE_DATA_DELAY_MS)
+            }
+        }
+
+        lifecycleScope.launch {
+            while (true) {
+                updateWeightedHeatmapDataApi()
                 delay(UPDATE_DATA_DELAY_MS)
             }
         }
@@ -201,7 +208,67 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private suspend fun updateWeightedHeatmapData() {
+    private suspend fun updateWeightedHeatmapDataLocal() {
+        val newRecords = if (!latestLatLngInit || weightedHeatmapData.size == 0) {
+            withContext(Dispatchers.Default) {
+                dbHelper.getRecordsSince(latestTimestamp)
+            }
+        } else {
+            withContext(Dispatchers.IO) {
+                dbHelper.getRecordsSince(latestTimestamp)
+            }
+        }
+
+        withContext(Dispatchers.Default) {
+            for (record in newRecords) {
+                val newTimestamp = record.first
+                val newLatLng = LatLng(
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude)
+                        .toDouble(),
+                    DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.longitude)
+                        .toDouble(),
+                )
+
+                val dbReading = record.third.coerceIn(0.0, 300.0)
+                val newDbIntensity = (dbReading / MAX_DB_INTENSITY).coerceAtMost(1.0)
+
+                if (newTimestamp > latestTimestamp) {
+                    latestTimestamp = newTimestamp
+                    latestLatLng = newLatLng
+                    latestDbReading = dbReading.toInt()
+
+                    if (!latestLatLngInit) {
+                        latestLatLngInit = true
+                    }
+                }
+
+                weightedHeatmapDataMutex.withLock {
+                    if (latLngMap.containsKey(newLatLng)) {
+                        weightedHeatmapData.removeIf {
+                            newLatLng.latitude == it.lat && newLatLng.longitude == it.lng && newTimestamp > it.time
+                        }
+                    } else {
+                        latLngMap[newLatLng] = 1
+                    }
+
+                    weightedHeatmapData.add(
+                        WeightedLocation(
+                            newLatLng,
+                            newDbIntensity,
+                            newTimestamp
+                        )
+                    )
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                binding.heatmapTvDecibelReading.text =
+                    getString(R.string.tvDecibelLevel_text, latestDbReading)
+            }
+        }
+    }
+
+    private suspend fun updateWeightedHeatmapDataApi() {
         val currentTime = System.currentTimeMillis()
 
         var newRecords: List<Triple<Long, LatLng, Double>>
