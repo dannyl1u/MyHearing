@@ -257,15 +257,15 @@ class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickL
         clickedImageIds.add(answer)
 
         when (audioResource) {
-            R.id.dog -> findViewById<ImageView>(R.id.dog).setBackgroundResource(R.drawable.selected_background)
-            R.id.cat -> findViewById<ImageView>(R.id.cat).setBackgroundResource(R.drawable.selected_background)
-            R.id.car -> findViewById<ImageView>(R.id.car).setBackgroundResource(R.drawable.selected_background)
-            R.id.king -> findViewById<ImageView>(R.id.king).setBackgroundResource(R.drawable.selected_background)
-            R.id.queen -> findViewById<ImageView>(R.id.queen).setBackgroundResource(R.drawable.selected_background)
-            R.id.jar -> findViewById<ImageView>(R.id.jar).setBackgroundResource(R.drawable.selected_background)
-            R.id.frog -> findViewById<ImageView>(R.id.frog).setBackgroundResource(R.drawable.selected_background)
-            R.id.door -> findViewById<ImageView>(R.id.door).setBackgroundResource(R.drawable.selected_background)
-            R.id.rat -> findViewById<ImageView>(R.id.rat).setBackgroundResource(R.drawable.selected_background)
+            R.raw.dog -> findViewById<ImageView>(R.id.dog).setBackgroundResource(R.drawable.selected_background)
+            R.raw.cat -> findViewById<ImageView>(R.id.cat).setBackgroundResource(R.drawable.selected_background)
+            R.raw.car -> findViewById<ImageView>(R.id.car).setBackgroundResource(R.drawable.selected_background)
+            R.raw.king -> findViewById<ImageView>(R.id.king).setBackgroundResource(R.drawable.selected_background)
+            R.raw.queen -> findViewById<ImageView>(R.id.queen).setBackgroundResource(R.drawable.selected_background)
+            R.raw.jar -> findViewById<ImageView>(R.id.jar).setBackgroundResource(R.drawable.selected_background)
+            R.raw.frog -> findViewById<ImageView>(R.id.frog).setBackgroundResource(R.drawable.selected_background)
+            R.raw.door -> findViewById<ImageView>(R.id.door).setBackgroundResource(R.drawable.selected_background)
+            R.raw.rat -> findViewById<ImageView>(R.id.rat).setBackgroundResource(R.drawable.selected_background)
         }
 
         if (clickedImageIds.size == 3) {
