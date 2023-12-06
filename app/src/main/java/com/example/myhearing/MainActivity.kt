@@ -90,6 +90,16 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
 
         // Navigation items
+        navigationView.itemIconTintList = null
+
+        val menu = navigationView.menu
+        val heatmapItem = menu.findItem(R.id.nav_item2)
+        heatmapItem.icon = ContextCompat.getDrawable(this, R.drawable.heatmap)
+        val testHearingItem = menu.findItem(R.id.nav_item3)
+        testHearingItem.icon = ContextCompat.getDrawable(this, R.drawable.test_your_hearing)
+        val calibrationItem = menu.findItem(R.id.nav_item4)
+        calibrationItem.icon = ContextCompat.getDrawable(this, R.drawable.calibration)
+
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {
