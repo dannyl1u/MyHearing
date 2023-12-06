@@ -85,11 +85,6 @@ class MyHearingDatabaseHelper(context: Context) :
 
     fun getRecentDecibelRecords(): List<Pair<Long, Float>> {
         val db = this.readableDatabase
-//        val cursor = db.rawQuery(
-//            "SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?",
-//            arrayOf((System.currentTimeMillis() - 41000).toString())
-//        )
-
         val cursor = db.rawQuery("SELECT * FROM $TABLE_NAME ORDER BY $TIME_COLUMN DESC LIMIT ?",
             arrayOf(21.toString())
         )

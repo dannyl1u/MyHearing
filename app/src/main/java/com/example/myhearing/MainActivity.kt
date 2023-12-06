@@ -234,13 +234,10 @@ class MainActivity : AppCompatActivity() {
         )
         dataEntries.clear()
 
-        val timestamps = ArrayList<Long>()
-
         var maxY = 0f
 
         records.forEachIndexed { index, pair ->
             if (pair.second >= 0) {
-                timestamps.add(pair.first)
                 dataEntries.add(Entry(index.toFloat(), pair.second))
 
                 if (pair.second > maxY) {
@@ -254,18 +251,13 @@ class MainActivity : AppCompatActivity() {
         dataSet.fillDrawable = gradientDrawable
         dataSet.valueFormatter = DefaultValueFormatter(0)
 
-        val yAxis = chart.axisLeft
-        yAxis.axisMaximum = maxY.coerceIn(100f, 300f)
+        chart.axisLeft.axisMaximum = maxY.coerceIn(100f, 300f)
 
         chart.data = LineData(dataSet)
         chart.data.notifyDataChanged()
         chart.notifyDataSetChanged()
-
-        chart.setVisibleXRangeMaximum(20f)
-        chart.setVisibleXRangeMinimum(20f)
+        chart.setVisibleXRange(20f, 20f)
         chart.invalidate()
-
-//        chart.moveViewToX((dataEntries.size - 20).toFloat())
     }
 
     private fun requestPermissions() {
