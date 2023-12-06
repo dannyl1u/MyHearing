@@ -68,6 +68,7 @@ class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickL
         binding.testHearingDrawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        binding.testHearingNavigationView.itemIconTintList = null
         binding.testHearingNavigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_item1 -> {

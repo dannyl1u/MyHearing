@@ -6,14 +6,17 @@
 
     <item
         android:id="@+id/nav_item2"
+        android:icon="@drawable/heatmap"
         android:title="@string/menu_heatmap_text" />
 
     <item
         android:id="@+id/nav_item3"
+        android:icon="@drawable/test_your_hearing"
         android:title="@string/menu_hearingTest_text" />
 
     <item
         android:id="@+id/nav_item4"
+        android:icon="@drawable/calibration"
         android:title="@string/menu_calibration_text" />
 
 </menu>
