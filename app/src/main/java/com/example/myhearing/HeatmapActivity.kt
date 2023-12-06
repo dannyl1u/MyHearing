@@ -77,7 +77,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private suspend fun fetchApiData(): List<Triple<Long, LatLng, Double>> {
         return withContext(Dispatchers.IO) {
             try {
-                val request = Request.Builder().url("http://127.0.0.1:5000/api/v1/getRecent").build()
+                val request = Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent").build()
                 httpClient.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
@@ -98,7 +98,6 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // Data class to match the JSON structure
     data class ApiRecord(
         val location: String,
         val noise_level: Int,
