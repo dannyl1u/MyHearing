@@ -35,7 +35,6 @@
         <activity android:name=".HeatmapActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".TestHearingActivity" />
-
         <service android:name=".services.LocationAndNoiseService" />
 
         <meta-data
