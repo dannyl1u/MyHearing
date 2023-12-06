@@ -80,12 +80,15 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private suspend fun fetchApiData(): List<Triple<Long, LatLng, Double>> {
         return withContext(Dispatchers.IO) {
             try {
-                val request = Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent").build()
+                val request =
+                    Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent")
+                        .build()
                 httpClient.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
                     val responseBody = response.body?.string()
-                    val apiData: List<ApiRecord> = gson.fromJson(responseBody, object : TypeToken<List<ApiRecord>>() {}.type)
+                    val apiData: List<ApiRecord> =
+                        gson.fromJson(responseBody, object : TypeToken<List<ApiRecord>>() {}.type)
 
                     apiData.map { record ->
                         val (lat, lng) = record.location.split(", ").map { it.toDouble() }
@@ -201,14 +204,24 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private suspend fun updateWeightedHeatmapData() {
         val currentTime = System.currentTimeMillis()
 
-        val newRecords = withContext(Dispatchers.IO) {
-            dbHelper.getRecordsSince(latestTimestamp)
-        }
-        val apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
-            lastApiCallTime = currentTime
-            fetchApiData()
+        var newRecords: List<Triple<Long, LatLng, Double>>
+        var apiRecords: List<Triple<Long, LatLng, Double>>
+
+        if (!latestLatLngInit || weightedHeatmapData.size == 0) {
+            withContext(Dispatchers.Default) {
+                newRecords = dbHelper.getRecordsSince(latestTimestamp)
+                apiRecords = emptyList()
+            }
         } else {
-            emptyList()
+            withContext(Dispatchers.IO) {
+                newRecords = dbHelper.getRecordsSince(latestTimestamp)
+                apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
+                    lastApiCallTime = currentTime
+                    fetchApiData()
+                } else {
+                    emptyList()
+                }
+            }
         }
 
         val combinedRecords = newRecords + apiRecords

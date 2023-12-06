@@ -111,7 +111,7 @@ class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickL
         randomAudioResources = listOf() // init here, otherwise will crash
 
         startButton.setOnClickListener {
-            audioAndNoise("left")
+            audioAndNoise()
             startButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
@@ -130,7 +130,7 @@ class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickL
         }
     }
 
-    private fun audioAndNoise(side: String) {
+    private fun audioAndNoise() {
         if (noiseIndex >= 6) {
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
@@ -291,10 +291,10 @@ class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickL
 
             if (testIteration in 3..5) {
                 // left ear finish. right ear start
-                audioAndNoise("right")
+                audioAndNoise()
             } else if (testIteration < 3) {
                 // still left ear.
-                audioAndNoise("left")
+                audioAndNoise()
                 testIteration++
             } else {
                 // end of test
