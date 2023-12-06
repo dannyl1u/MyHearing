@@ -69,7 +69,7 @@ class CalibrationActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_item3 -> {
-                    startActivity(Intent(this, TestHearing::class.java))
+                    startActivity(Intent(this, TestHearingActivity::class.java))
                     true
                 }
 

@@ -5,7 +5,7 @@
     android:id="@+id/testHearing_drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TestHearing"
+    tools:context=".TestHearingActivity"
     tools:viewBindingIgnore="false">
 
     <RelativeLayout
@@ -22,14 +22,14 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".TestHearing">
+            tools:context=".TestHearingActivity">
 
             <TextView
                 android:id="@+id/instructions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Press start, listen to the audio, \nthen select the appropriate image."
+                android:text="@string/testHearing_tvInstructions_text"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toTopOf="@+id/gridLayout"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -141,10 +141,10 @@
                     android:layout_gravity="fill"
                     android:clickable="true"
                     android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/jar"
-                    android:importantForAccessibility="no" />
+                    android:src="@drawable/jar" />
 
                 <ImageView
                     android:id="@+id/frog"
@@ -155,10 +155,10 @@
                     android:layout_gravity="fill"
                     android:clickable="true"
                     android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/frog"
-                    android:importantForAccessibility="no" />
+                    android:src="@drawable/frog" />
 
                 <ImageView
                     android:id="@+id/door"
@@ -169,10 +169,10 @@
                     android:layout_gravity="fill"
                     android:clickable="true"
                     android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/door"
-                    android:importantForAccessibility="no" />
+                    android:src="@drawable/door" />
 
                 <ImageView
                     android:id="@+id/rat"
@@ -183,10 +183,10 @@
                     android:layout_gravity="fill"
                     android:clickable="true"
                     android:focusable="true"
+                    android:importantForAccessibility="no"
                     android:onClick="onImageClick"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/rat"
-                    android:importantForAccessibility="no" />
+                    android:src="@drawable/rat" />
 
             </GridLayout>
 
@@ -194,18 +194,18 @@
                 android:id="@+id/startButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start Test"
+                android:text="@string/testHearing_btnStart_text"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
 
             <androidx.constraintlayout.utils.widget.ImageFilterView
-                android:id="@+id/leftear"
+                android:id="@+id/left_ear"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:alpha="0.2"
-                android:src="@drawable/leftear"
+                android:src="@drawable/left_ear"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/startButton"
                 app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
@@ -214,17 +214,17 @@
                 android:id="@+id/leftScore"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0/9"
-                app:layout_constraintEnd_toEndOf="@+id/leftear"
-                app:layout_constraintStart_toStartOf="@+id/leftear"
-                app:layout_constraintTop_toBottomOf="@+id/leftear" />
+                android:text="@string/testHearing_tvScore_defaultText"
+                app:layout_constraintEnd_toEndOf="@+id/left_ear"
+                app:layout_constraintStart_toStartOf="@+id/left_ear"
+                app:layout_constraintTop_toBottomOf="@+id/left_ear" />
 
             <androidx.constraintlayout.utils.widget.ImageFilterView
-                android:id="@+id/rightear"
+                android:id="@+id/right_ear"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:alpha="0.2"
-                android:src="@drawable/rightear"
+                android:src="@drawable/right_ear"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/startButton"
                 app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
@@ -234,10 +234,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="0/9"
-                app:layout_constraintEnd_toEndOf="@+id/rightear"
-                app:layout_constraintStart_toStartOf="@+id/rightear"
-                app:layout_constraintTop_toBottomOf="@+id/rightear" />
+                android:text="@string/testHearing_tvScore_defaultText"
+                app:layout_constraintEnd_toEndOf="@+id/right_ear"
+                app:layout_constraintStart_toStartOf="@+id/right_ear"
+                app:layout_constraintTop_toBottomOf="@+id/right_ear" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

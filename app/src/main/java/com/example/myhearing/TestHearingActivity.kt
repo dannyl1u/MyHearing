@@ -21,7 +21,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
 import com.example.myhearing.databinding.ActivityTestHearingBinding
 
-class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
+class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
     private lateinit var binding: ActivityTestHearingBinding
 
     private lateinit var startButton: Button
@@ -81,7 +81,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                 }
 
                 R.id.nav_item3 -> {
-                    startActivity(Intent(this, TestHearing::class.java))
+                    startActivity(Intent(this, TestHearingActivity::class.java))
                     true
                 }
 
@@ -95,8 +95,8 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         }
 
         startButton = findViewById(R.id.startButton)
-        leftEar = findViewById(R.id.leftear)
-        rightEar = findViewById(R.id.rightear)
+        leftEar = findViewById(R.id.left_ear)
+        rightEar = findViewById(R.id.right_ear)
         leftScoreTV = findViewById(R.id.leftScore)
         rightScoreTV = findViewById(R.id.rightScore)
 
@@ -110,7 +110,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         randomAudioResources = listOf() // init here, otherwise will crash
 
         startButton.setOnClickListener {
-            audioAndNoise("left")
+            audioAndNoise()
             startButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
@@ -129,7 +129,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         }
     }
 
-    private fun audioAndNoise(side: String) {
+    private fun audioAndNoise() {
         if (noiseIndex >= 6) {
             leftEar.alpha = 0.2f
             rightEar.alpha = 0.2f
@@ -257,17 +257,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         // Do something with the answer and audio resource ID
         clickedImageIds.add(answer)
 
-        when (answer) {
-            "dog" -> findViewById<ImageView>(R.id.dog).setBackgroundResource(R.drawable.selected_background)
-            "cat" -> findViewById<ImageView>(R.id.cat).setBackgroundResource(R.drawable.selected_background)
-            "car" -> findViewById<ImageView>(R.id.car).setBackgroundResource(R.drawable.selected_background)
-            "king" -> findViewById<ImageView>(R.id.king).setBackgroundResource(R.drawable.selected_background)
-            "queen" -> findViewById<ImageView>(R.id.queen).setBackgroundResource(R.drawable.selected_background)
-            "jar" -> findViewById<ImageView>(R.id.jar).setBackgroundResource(R.drawable.selected_background)
-            "frog" -> findViewById<ImageView>(R.id.frog).setBackgroundResource(R.drawable.selected_background)
-            "door" -> findViewById<ImageView>(R.id.door).setBackgroundResource(R.drawable.selected_background)
-            "rat" -> findViewById<ImageView>(R.id.rat).setBackgroundResource(R.drawable.selected_background)
-        }
+        findViewById<ImageView>(audioResource).setBackgroundResource(R.drawable.selected_background)
 
         if (clickedImageIds.size == 3) {
             // check user selection, give score
@@ -276,12 +266,10 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
             if (sideIndex == 0 || sideIndex == 1 || sideIndex == 2 || sideIndex == 3) {
                 leftScore += correctCount
-                val tempScore = (leftScore * 100 / 9)
-                leftScoreTV.text = "$leftScore/9 correct"
+                leftScoreTV.text = getString(R.string.testHearing_leftScoreResult, leftScore)
             } else {
                 rightScore += correctCount
-                val tempScore = (rightScore * 100 / 9)
-                rightScoreTV.text = "$rightScore/9 correct"
+                rightScoreTV.text = getString(R.string.testHearing_rightScoreResult, rightScore)
             }
             clickedImageIds.clear()
             // Re-instate layout cover
@@ -294,10 +282,10 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
             if (testIteration in 3..5) {
                 // left ear finish. right ear start
-                audioAndNoise("right")
+                audioAndNoise()
             } else if (testIteration < 3) {
                 // still left ear.
-                audioAndNoise("left")
+                audioAndNoise()
                 testIteration++
             } else {
                 // end of test
@@ -360,7 +348,7 @@ class ResultFragment : DialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_test_end, container, false)
+        return inflater.inflate(R.layout.fragment_result, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -371,21 +359,21 @@ class ResultFragment : DialogFragment() {
         val rightEarTV: TextView = view.findViewById(R.id.rightEar)
         val overallTV: TextView = view.findViewById(R.id.overallResult)
 
-        leftEarTV.text = "Left Ear:\n$leftScore%"
-        rightEarTV.text = "Right Ear:\n$rightScore%"
+        leftEarTV.text = getString(R.string.testHearing_leftScorePercent, leftScore)
+        rightEarTV.text = getString(R.string.testHearing_rightScorePercent, rightScore)
 
         val overallScore = (leftScore + rightScore) / 2
         if (overallScore >= 66.66) {
             // Green: pretty good
-            overallTV.text = "Overall:$overallScore%\nPretty Good!"
+            overallTV.text = getString(R.string.testHearing_overallScore_1, overallScore)
             overallTV.setTextColor(Color.parseColor("#00bf10")) //green
         } else if (overallScore >= 44.44) {
             // Orange : could use improvement
-            overallTV.text = "Overall:$overallScore%\nTake care of your ears!"
+            overallTV.text = getString(R.string.testHearing_overallScore_2, overallScore)
             overallTV.setTextColor(Color.parseColor("#e38800")) //orange
         } else {
             // Red : HORRIBLE
-            overallTV.text = "Overall:$overallScore%\nSee a doctor."
+            overallTV.text = getString(R.string.testHearing_overallScore_3, overallScore)
             overallTV.setTextColor(Color.parseColor("#bf1506")) //red
         }
 

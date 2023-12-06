@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/heatmap_toolbar"
-            android:text="@string/heatmap_tvDecibelLevel_default_text"
+            android:text="@string/tvDecibelLevel_default_text"
             android:textColor="@color/black"
             android:textSize="20sp"
             android:textStyle="bold" />

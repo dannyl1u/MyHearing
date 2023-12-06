@@ -34,7 +34,6 @@ import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.services.LocationAndNoiseService
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -107,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_item3 -> {
-                    startActivity(Intent(this, TestHearing::class.java))
+                    startActivity(Intent(this, TestHearingActivity::class.java))
                     true
                 }
 
