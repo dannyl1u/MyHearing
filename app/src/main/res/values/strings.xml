@@ -30,9 +30,9 @@
     <string name="testHearing_tvScore_defaultText">0/9</string>
     <string name="testHearing_leftScoreResult">%1$d/9 correct</string>
     <string name="testHearing_rightScoreResult">%1$d/9 correct</string>
-    <string name="testHearing_leftScorePercent">Left Ear:\n%1$d\%</string>
-    <string name="testHearing_rightScorePercent">Right Ear:\n%1$d\%</string>
-    <string name="testHearing_overallScore_1">Overall:%1$d\%\nPretty Good!</string>
-    <string name="testHearing_overallScore_2">Overall:%1$d\%\nTake care of your ears!</string>
-    <string name="testHearing_overallScore_3">Overall:%1$d\%\nSee a doctor.</string>
+    <string name="testHearing_leftScorePercent">Left Ear:\n%1$d%%</string>
+    <string name="testHearing_rightScorePercent">Right Ear:\n%1$d%%</string>
+    <string name="testHearing_overallScore_1">Overall:%1$d%%\nPretty Good!</string>
+    <string name="testHearing_overallScore_2">Overall:%1$d%%\nTake care of your ears!</string>
+    <string name="testHearing_overallScore_3">Overall:%1$d%%\nSee a doctor.</string>
 </resources>

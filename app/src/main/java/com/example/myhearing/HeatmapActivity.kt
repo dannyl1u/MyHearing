@@ -80,17 +80,20 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private suspend fun fetchApiData(): List<Triple<Long, LatLng, Double>> {
         return withContext(Dispatchers.IO) {
             try {
-                val request = Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent").build()
+                val request =
+                    Request.Builder().url("https://myhearingserver.onrender.com/api/v1/getRecent")
+                        .build()
                 httpClient.newCall(request).execute().use { response ->
                     if (!response.isSuccessful) throw IOException("Unexpected code $response")
 
                     val responseBody = response.body?.string()
-                    val apiData: List<ApiRecord> = gson.fromJson(responseBody, object : TypeToken<List<ApiRecord>>() {}.type)
+                    val apiData: List<ApiRecord> =
+                        gson.fromJson(responseBody, object : TypeToken<List<ApiRecord>>() {}.type)
 
                     apiData.map { record ->
                         val (lat, lng) = record.location.split(", ").map { it.toDouble() }
                         val timestamp = record.timestamp.toLong()
-                        val noiseLevel = record.noise_level.toDouble()
+                        val noiseLevel = record.noiseLevel.toDouble()
                         Triple(timestamp, LatLng(lat, lng), noiseLevel)
                     }
                 }
@@ -103,7 +106,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     data class ApiRecord(
         val location: String,
-        val noise_level: Int,
+        val noiseLevel: Int,
         val timestamp: String
     )
 
