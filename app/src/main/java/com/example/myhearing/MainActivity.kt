@@ -37,6 +37,7 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.DefaultValueFormatter
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.Dispatchers
@@ -191,7 +192,10 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             while (true) {
-                updateChartData()
+                withContext(Dispatchers.Main) {
+                    updateChartData()
+                }
+
                 delay(500)
             }
         }
@@ -203,59 +207,65 @@ class MainActivity : AppCompatActivity() {
         chart.data = lineData
 
         val xAxis = chart.xAxis
-        xAxis.valueFormatter = IndexAxisValueFormatter(getXAxisValues())
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
         xAxis.granularity = 1f
+        xAxis.setDrawLabels(false)
+
+        val yAxis = chart.axisLeft
+        yAxis.axisMinimum = 0f
+        yAxis.axisMaximum = 100f
+        yAxis.granularity = 10f
 
         chart.axisLeft.setDrawGridLines(false)
         chart.axisRight.isEnabled = false
         chart.description.isEnabled = false
     }
 
-    private fun getXAxisValues(): ArrayList<String> {
-        val labels = ArrayList<String>()
-        val calendar = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private fun updateChartData() {
+        val records = dbHelper.getRecentDecibelRecords()
 
-        for (i in 0..9) {
-            calendar.add(Calendar.MINUTE, -1)
-            labels.add(0, dateFormat.format(calendar.time))
-        }
+        val startColor = Color.argb(128, 255, 0, 0)
+        val endColor = Color.argb(128, 0, 255, 0)
 
-        return labels
-    }
+        val gradientDrawable = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(startColor, endColor)
+        )
+        dataEntries.clear()
 
-    private suspend fun updateChartData() {
-        val records = withContext(Dispatchers.IO) {
-            dbHelper.getRecentDecibelRecords()
-        }
+        val timestamps = ArrayList<Long>()
 
-        withContext(Dispatchers.Main) {
-            val startColor = Color.RED
-            val endColor = Color.GREEN
+        var maxY = 0f
 
-            val gradientDrawable = GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(startColor, endColor)
-            )
-            dataEntries.clear()
+        records.forEachIndexed { index, pair ->
+            if (pair.second >= 0) {
+                timestamps.add(pair.first)
+                dataEntries.add(Entry(index.toFloat(), pair.second))
 
-            records.forEachIndexed { index, pair ->
-                if (pair.second >= 0) {
-                    dataEntries.add(Entry(index.toFloat(), pair.second))
+                if (pair.second > maxY) {
+                    maxY = pair.second
                 }
             }
-            val dataSet = LineDataSet(dataEntries, "Decibel Level")
-
-            dataSet.setDrawFilled(true)
-            dataSet.fillDrawable = gradientDrawable
-
-            chart.data = LineData(dataSet)
-            chart.data.notifyDataChanged()
-            chart.notifyDataSetChanged()
-            chart.invalidate()
         }
+        val dataSet = LineDataSet(dataEntries, "Decibel Level")
+
+        dataSet.setDrawFilled(true)
+        dataSet.fillDrawable = gradientDrawable
+        dataSet.valueFormatter = DefaultValueFormatter(0)
+
+        val yAxis = chart.axisLeft
+        yAxis.axisMaximum = maxY.coerceIn(100f, 300f)
+
+        chart.data = LineData(dataSet)
+        chart.data.notifyDataChanged()
+        chart.notifyDataSetChanged()
+
+        chart.setVisibleXRangeMaximum(20f)
+        chart.setVisibleXRangeMinimum(20f)
+        chart.invalidate()
+
+//        chart.moveViewToX((dataEntries.size - 20).toFloat())
     }
 
     private fun requestPermissions() {

@@ -31,14 +31,14 @@ import java.text.DecimalFormat
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         const val DEFAULT_LOCATION_PATTERN = "#.#####"
-        const val UPDATE_DATA_DELAY_MS = 500L
+        const val UPDATE_DATA_DELAY_MS = 1000L
         const val REFRESH_HEATMAP_DELAY_MS = 500L
         const val MAX_DB_INTENSITY = 100.0
         const val CELL_SIZE_PX = 40
         val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.RED)
         val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.85f)
         const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 25
+        const val PROVIDER_RADIUS = 30
         const val DEFAULT_ZOOM_LEVEL = 18f
     }
 
