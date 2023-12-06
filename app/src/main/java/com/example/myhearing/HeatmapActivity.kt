@@ -214,7 +214,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         println("Combined records: $combinedRecords")
 
         withContext(Dispatchers.Default) {
-            for (record in newRecords) {
+            for (record in combinedRecords) {
                 val newTimestamp = record.first
                 val newLatLng = LatLng(
                     DecimalFormat(DEFAULT_LOCATION_PATTERN).format(record.second.latitude)
@@ -252,6 +252,15 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                             newTimestamp
                         )
                     )
+                }
+            }
+
+            // Gets user's latest decibel level to display on screen
+            for (localRecord in newRecords) {
+                val dbReading = localRecord.third.coerceIn(0.0, 300.0)
+                val newTimestamp = localRecord.first
+                if (newTimestamp > latestTimestamp) {
+                    latestDbReading = dbReading.toInt()
                 }
             }
 
