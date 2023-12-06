@@ -37,9 +37,9 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.math.log10
 
 class LocationAndNoiseService : Service(), CoroutineScope {
-
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
+    private lateinit var notificationManager: NotificationManager
 
     private var lastLatitude: Double? = null
     private var lastLongitude: Double? = null
@@ -66,18 +66,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
                     lastLongitude = location.longitude
                 }
             }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "LocationAndNoiseServiceChannel",
-                "Location and Noise Tracking",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            channel.description = "Channel for Location and Noise Service"
-            val notificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
         }
 
         initAudioRecord()
@@ -107,17 +95,35 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
     override fun onDestroy() {
         super.onDestroy()
+        notificationManager.cancel(SERVICE_NOTIFICATION_ID)
         serviceJob.cancel()
+
+        audioRecord?.stop()
+        audioRecord?.release()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = NotificationCompat.Builder(this, "LocationAndNoiseServiceChannel")
+        val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Location and Noise Service")
-            .setContentText("Tracking location and noise")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentText("Monitoring location and noise levels")
+            .setSmallIcon(R.mipmap.ic_launcher_round)
+            .setOngoing(true)
             .build()
 
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "com.example.myhearing",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+
+            notificationManager.createNotificationChannel(channel)
+        }
+
         startForeground(SERVICE_NOTIFICATION_ID, notification)
+        notificationManager.notify(SERVICE_NOTIFICATION_ID, notification)
 
         startTracking()
 
@@ -256,8 +262,6 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
     companion object {
         private const val SERVICE_NOTIFICATION_ID = 1
+        private const val CHANNEL_ID = "LocationAndNoiseServiceChannel"
     }
-
-
 }
-
