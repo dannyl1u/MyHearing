@@ -86,9 +86,10 @@ class MyHearingDatabaseHelper(context: Context) :
     fun getRecentDecibelRecords(): List<Pair<Long, Float>> {
         val db = this.readableDatabase
         val cursor = db.rawQuery(
-            "SELECT * FROM $TABLE_NAME WHERE $TIME_COLUMN > ?",
-            arrayOf((System.currentTimeMillis() - 20000).toString())
+            "SELECT * FROM $TABLE_NAME ORDER BY $TIME_COLUMN DESC LIMIT ?",
+            arrayOf(21.toString())
         )
+
         val records = mutableListOf<Pair<Long, Float>>()
 
         while (cursor.moveToNext()) {
@@ -102,7 +103,7 @@ class MyHearingDatabaseHelper(context: Context) :
             if (decibelColumnIndex != -1) {
                 decibel = cursor.getFloat(decibelColumnIndex)
             }
-            records.add(Pair(timestamp, decibel))
+            records.add(0, Pair(timestamp, decibel))
         }
         cursor.close()
         db.close()

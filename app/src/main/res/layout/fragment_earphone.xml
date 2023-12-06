@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Please wear earphones for optimal experience."
+        android:text="@string/earphone_tvWarning_text"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@id/earPhoneVideo"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,7 +31,7 @@
         android:id="@+id/okButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="OK"
+        android:text="@string/earphone_btnOk_text"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

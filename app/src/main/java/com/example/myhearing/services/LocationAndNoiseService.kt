@@ -141,9 +141,9 @@ class LocationAndNoiseService : Service(), CoroutineScope {
 
                 if (elapsedTime >= apiUpdateInterval) {
                     sendLocationAndNoiseData()
-                    saveDataToDatabase()
                     elapsedTime = 0
                 } else {
+                    saveDataToDatabase()
                     elapsedTime += broadcastInterval
                 }
 

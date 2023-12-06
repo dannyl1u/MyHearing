@@ -8,7 +8,6 @@ import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 
 class SettingsActivity : AppCompatActivity() {
-
     private lateinit var modeSpinner: Spinner
     private lateinit var applySettingsButton: Button
 
@@ -19,7 +18,6 @@ class SettingsActivity : AppCompatActivity() {
         modeSpinner = findViewById(R.id.spinnerMode)
         applySettingsButton = findViewById(R.id.applyButton)
 
-        // Use spinner to determine UI
         val modeOptions = arrayOf("Number", "Circular Gauge", "Horizontal Gauge")
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modeOptions)
         modeSpinner.adapter = adapter
@@ -32,17 +30,11 @@ class SettingsActivity : AppCompatActivity() {
     private fun applySettings() {
         val selectedMode = modeSpinner.selectedItem.toString()
 
-
-        // Save via SharedPreferences
-        val sharedPreferences = getSharedPreferences("Settings", 0)
-        val editor = sharedPreferences.edit()
-        editor.putString("selectedMode", selectedMode)
-        editor.apply()
+        val prefs = getSharedPreferences("Settings", 0)
+        prefs.edit().putString("selectedMode", selectedMode).apply()
 
         val intent = Intent(this, MainActivity::class.java)
-
         intent.putExtra("selectedMode", selectedMode)
-
         startActivity(intent)
 
         finish()

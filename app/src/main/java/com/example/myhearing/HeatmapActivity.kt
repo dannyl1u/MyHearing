@@ -1,8 +1,11 @@
 package com.example.myhearing
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.myhearing.data.MyHearingDatabaseHelper
 import com.example.myhearing.data.WeightedLocation
@@ -28,14 +31,14 @@ import java.text.DecimalFormat
 class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     companion object {
         const val DEFAULT_LOCATION_PATTERN = "#.#####"
-        const val UPDATE_DATA_DELAY_MS = 500L
+        const val UPDATE_DATA_DELAY_MS = 1000L
         const val REFRESH_HEATMAP_DELAY_MS = 500L
         const val MAX_DB_INTENSITY = 100.0
         const val CELL_SIZE_PX = 40
         val GRADIENT_COLORS = intArrayOf(Color.GREEN, Color.RED)
         val GRADIENT_START_POINTS = floatArrayOf(0.2f, 0.85f)
         const val PROVIDER_MAX_INTENSITY = 1.0
-        const val PROVIDER_RADIUS = 25
+        const val PROVIDER_RADIUS = 30
         const val DEFAULT_ZOOM_LEVEL = 18f
     }
 
@@ -49,6 +52,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var latestTimestamp = 0L
     private lateinit var latestLatLng: LatLng
+    private var latestDbReading = 0
     private lateinit var latestAveragedLatLng: LatLng
     private var latestLatLngInit = false
 
@@ -67,6 +71,43 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding = ActivityHeatmapBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setSupportActionBar(binding.heatmapToolbar)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            binding.heatmapDrawerLayout,
+            binding.heatmapToolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+        binding.heatmapDrawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        binding.heatmapNavigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_item1 -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item2 -> {
+                    startActivity(Intent(this, HeatmapActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item3 -> {
+                    startActivity(Intent(this, TestHearingActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item4 -> {
+                    startActivity(Intent(this, CalibrationActivity::class.java))
+                    true
+                }
+
+                else -> false
+            }
+        }
 
         dbHelper = MyHearingDatabaseHelper(this)
 
@@ -80,6 +121,14 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment =
             supportFragmentManager.findFragmentById(R.id.heatmap_map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (binding.heatmapDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.heatmapDrawerLayout.closeDrawer(GravityCompat.START, false)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -128,11 +177,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (newTimestamp > latestTimestamp) {
                     latestTimestamp = newTimestamp
                     latestLatLng = newLatLng
-
-                    withContext(Dispatchers.Main) {
-                        binding.heatmapTvDecibelReading.text =
-                            getString(R.string.heatmap_tvDecibelReading_text, dbReading.toInt())
-                    }
+                    latestDbReading = dbReading.toInt()
 
                     if (!latestLatLngInit) {
                         latestLatLngInit = true
@@ -156,6 +201,11 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                         )
                     )
                 }
+            }
+
+            withContext(Dispatchers.Main) {
+                binding.heatmapTvDecibelReading.text =
+                    getString(R.string.tvDecibelLevel_text, latestDbReading)
             }
         }
     }

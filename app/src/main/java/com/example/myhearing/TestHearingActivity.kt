@@ -1,5 +1,6 @@
 package com.example.myhearing
 
+import android.content.Intent
 import android.graphics.Color
 import android.media.MediaPlayer
 import android.net.Uri
@@ -14,11 +15,16 @@ import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.TextView
 import android.widget.VideoView
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.DialogFragment
+import com.example.myhearing.databinding.ActivityTestHearingBinding
 
-class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
-    private lateinit var StartButton: Button
+class TestHearingActivity : AppCompatActivity(), ResultFragment.OnOkButtonClickListener {
+    private lateinit var binding: ActivityTestHearingBinding
+
+    private lateinit var startButton: Button
     private lateinit var leftEar: ImageView
     private lateinit var rightEar: ImageView
 
@@ -29,13 +35,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     private val clickedImageIds = mutableListOf<String>()
     private var testIteration = 0
 
-    val allAudioResources = listOf(
+    private val allAudioResources = listOf(
         R.raw.dog, R.raw.cat, R.raw.car, R.raw.king, R.raw.queen,
         R.raw.jar, R.raw.frog, R.raw.door, R.raw.rat
     )
-    val noiseLevelList = listOf(0.05f, 0.3f, 0.7f, 0.05f, 0.3f, 0.7f)
+    private val noiseLevelList = listOf(0.05f, 0.3f, 0.7f, 0.05f, 0.3f, 0.7f)
     private var noiseIndex = 0
-    val sideCounter = listOf("left", "left", "left", "right", "right", "right")
+    private val sideCounter = listOf("left", "left", "left", "right", "right", "right")
     private var sideIndex = 0
 
     private var leftScore: Int = 0
@@ -47,10 +53,50 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_test_hearing)
-        StartButton = findViewById(R.id.startButton)
-        leftEar = findViewById(R.id.leftear)
-        rightEar = findViewById(R.id.rightear)
+
+        binding = ActivityTestHearingBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.testHearingToolbar)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            binding.testHearingDrawerLayout,
+            binding.testHearingToolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+        binding.testHearingDrawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        binding.testHearingNavigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_item1 -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item2 -> {
+                    startActivity(Intent(this, HeatmapActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item3 -> {
+                    startActivity(Intent(this, TestHearingActivity::class.java))
+                    true
+                }
+
+                R.id.nav_item4 -> {
+                    startActivity(Intent(this, CalibrationActivity::class.java))
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        startButton = findViewById(R.id.startButton)
+        leftEar = findViewById(R.id.left_ear)
+        rightEar = findViewById(R.id.right_ear)
         leftScoreTV = findViewById(R.id.leftScore)
         rightScoreTV = findViewById(R.id.rightScore)
 
@@ -63,9 +109,9 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
         randomAudioResources = listOf() // init here, otherwise will crash
 
-        StartButton.setOnClickListener {
+        startButton.setOnClickListener {
             audioAndNoise("left")
-            StartButton.visibility = GONE
+            startButton.visibility = GONE
         }
         mediaPlayer = MediaPlayer.create(this, R.raw.cat)
         noisePlayer = MediaPlayer.create(this, R.raw.noise)
@@ -73,6 +119,14 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
         val headphoneFragment = EarPhoneFragment()
         headphoneFragment.show(supportFragmentManager, "HeadPhoneFragmentTag")
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (binding.testHearingDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.testHearingDrawerLayout.closeDrawer(GravityCompat.START, false)
+        }
     }
 
     private fun audioAndNoise(side: String) {
@@ -85,7 +139,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
             return
         }
-        // Re-instate layoutcover: to cover up GridView to prevent clicks during audio
+
         overlayCover.bringToFront()
         overlayCover.visibility = View.VISIBLE
         overlayCover.isClickable = true
@@ -100,7 +154,7 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
     }
 
-    fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
+    private fun getRandomAudioResources(audioList: List<Int>, count: Int): List<Int> {
         require(count <= audioList.size) { "Count should be less than or equal to the size of the audio list." }
 
         val shuffledList = audioList.shuffled()
@@ -125,7 +179,6 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
                     start()
                 }
             } else {
-                // release player when finished all audio.
                 mediaPlayer?.release()
             }
         }
@@ -134,18 +187,24 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
     }
 
     private fun playNoise(fl: Float, side: String) {
-        if (side == "left") {
-            leftEar.alpha = 1f
-            rightEar.alpha = 0.2f
-        } else if (side == "right") {
-            rightEar.alpha = 1f
-            leftEar.alpha = 0.2f
-        } else {
-            leftEar.alpha = 0.2f
-            rightEar.alpha = 0.2f
+        when (side) {
+            "left" -> {
+                leftEar.alpha = 1f
+                rightEar.alpha = 0.2f
+            }
+
+            "right" -> {
+                rightEar.alpha = 1f
+                leftEar.alpha = 0.2f
+            }
+
+            else -> {
+                leftEar.alpha = 0.2f
+                rightEar.alpha = 0.2f
+            }
         }
 
-        var noisePlayer: MediaPlayer? = null
+        val noisePlayer: MediaPlayer?
         noisePlayer = MediaPlayer().apply {
             setDataSource(resources.openRawResourceFd(R.raw.noise))
 
@@ -194,12 +253,19 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
 
     private fun handleImageClick(answer: String, audioResource: Int) {
-        // Do something with the answerr and audio resource ID
         clickedImageIds.add(answer)
 
-        // Change the background of the clicked ImageView
-        val resourceId = resources.getIdentifier(answer, "id", packageName)
-        findViewById<ImageView>(resourceId)?.setBackgroundResource(R.drawable.selected_background)
+        when (audioResource) {
+            R.id.dog -> findViewById<ImageView>(R.id.dog).setBackgroundResource(R.drawable.selected_background)
+            R.id.cat -> findViewById<ImageView>(R.id.cat).setBackgroundResource(R.drawable.selected_background)
+            R.id.car -> findViewById<ImageView>(R.id.car).setBackgroundResource(R.drawable.selected_background)
+            R.id.king -> findViewById<ImageView>(R.id.king).setBackgroundResource(R.drawable.selected_background)
+            R.id.queen -> findViewById<ImageView>(R.id.queen).setBackgroundResource(R.drawable.selected_background)
+            R.id.jar -> findViewById<ImageView>(R.id.jar).setBackgroundResource(R.drawable.selected_background)
+            R.id.frog -> findViewById<ImageView>(R.id.frog).setBackgroundResource(R.drawable.selected_background)
+            R.id.door -> findViewById<ImageView>(R.id.door).setBackgroundResource(R.drawable.selected_background)
+            R.id.rat -> findViewById<ImageView>(R.id.rat).setBackgroundResource(R.drawable.selected_background)
+        }
 
         if (clickedImageIds.size == 3) {
             // check user selection, give score
@@ -208,15 +274,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
 
             if (sideIndex == 0 || sideIndex == 1 || sideIndex == 2 || sideIndex == 3) {
                 leftScore += correctCount
-                val tempScore = (leftScore * 100 / 9).toInt()
-                leftScoreTV.text = "$leftScore/9 correct"
+                leftScoreTV.text = getString(R.string.testHearing_leftScoreResult, leftScore)
             } else {
                 rightScore += correctCount
-                val tempScore = (rightScore * 100 / 9).toInt()
-                rightScoreTV.text = "$rightScore/9 correct"
+                rightScoreTV.text = getString(R.string.testHearing_rightScoreResult, rightScore)
             }
             clickedImageIds.clear()
-            // Re-instate layoutcover
+
             overlayCover.bringToFront()
             overlayCover.visibility = View.VISIBLE
             overlayCover.isClickable = true
@@ -251,14 +315,13 @@ class TestHearing : AppCompatActivity(), ResultFragment.OnOkButtonClickListener 
             "frog" -> R.raw.frog
             "door" -> R.raw.door
             "rat" -> R.raw.rat
-            else -> 0 // Handle other cases if needed
+            else -> 0
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        // Release the MediaPlayer resources when the activity is destroyed
         mediaPlayer.release()
         noisePlayer.stop()
         noisePlayer.release()
@@ -292,7 +355,7 @@ class ResultFragment : DialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_test_end, container, false)
+        return inflater.inflate(R.layout.fragment_result, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -303,25 +366,24 @@ class ResultFragment : DialogFragment() {
         val rightEarTV: TextView = view.findViewById(R.id.rightEar)
         val overallTV: TextView = view.findViewById(R.id.overallResult)
 
-        leftEarTV.text = "Left Ear:\n$leftScore%"
-        rightEarTV.text = "Right Ear:\n$rightScore%"
+        leftEarTV.text = getString(R.string.testHearing_leftScorePercent, leftScore)
+        rightEarTV.text = getString(R.string.testHearing_rightScorePercent, rightScore)
 
-        var overallScore = (leftScore + rightScore) / 2
+        val overallScore = (leftScore + rightScore) / 2
         if (overallScore >= 66.66) {
             // Green: pretty good
-            overallTV.text = "Overall:$overallScore%\nPretty Good!"
+            overallTV.text = getString(R.string.testHearing_overallScore_1, overallScore)
             overallTV.setTextColor(Color.parseColor("#00bf10")) //green
         } else if (overallScore >= 44.44) {
             // Orange : could use improvement
-            overallTV.text = "Overall:$overallScore%\nTake care of your ears!"
+            overallTV.text = getString(R.string.testHearing_overallScore_2, overallScore)
             overallTV.setTextColor(Color.parseColor("#e38800")) //orange
         } else {
             // Red : HORRIBLE
-            overallTV.text = "Overall:$overallScore%\nSee a doctor."
+            overallTV.text = getString(R.string.testHearing_overallScore_3, overallScore)
             overallTV.setTextColor(Color.parseColor("#bf1506")) //red
         }
 
-        // Access the Button through the 'view' parameter
         val okButton: Button = view.findViewById(R.id.okButton)
         okButton.setOnClickListener {
             onOkButtonClickListener?.onOkButtonClick()
@@ -342,7 +404,6 @@ class EarPhoneFragment : DialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set up the VideoView
         val videoView: VideoView = view.findViewById(R.id.earPhoneVideo)
         val videoPath = "android.resource://" + requireContext().packageName + "/" + R.raw.earphone
         videoView.setVideoURI(Uri.parse(videoPath))
@@ -350,7 +411,6 @@ class EarPhoneFragment : DialogFragment() {
         mediaController.setAnchorView(videoView)
         videoView.setMediaController(mediaController)
 
-        // Start playing the video
         videoView.start()
 
         val okButton: Button = view.findViewById(R.id.okButton)

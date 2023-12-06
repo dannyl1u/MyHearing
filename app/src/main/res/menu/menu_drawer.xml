@@ -1,16 +1,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item
+        android:id="@+id/nav_item1"
+        android:title="@string/menu_decibelMeter_text" />
 
     <item
         android:id="@+id/nav_item2"
-        android:title="Heatmap" />
+        android:title="@string/menu_heatmap_text" />
 
     <item
         android:id="@+id/nav_item3"
-        android:title="Test your hearing" />
+        android:title="@string/menu_hearingTest_text" />
 
     <item
         android:id="@+id/nav_item4"
-        android:title="Calibration" />
+        android:title="@string/menu_calibration_text" />
 
 </menu>

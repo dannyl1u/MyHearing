@@ -1,206 +1,254 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/testHearing_drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TestHearing">
+    tools:context=".TestHearingActivity"
+    tools:viewBindingIgnore="false">
 
-    <TextView
-        android:id="@+id/instructions"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/testHearing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.AppCompat.Light" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".TestHearingActivity">
+
+            <TextView
+                android:id="@+id/instructions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/testHearing_tvInstructions_text"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toTopOf="@+id/gridLayout"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <FrameLayout
+                android:id="@+id/overlay"
+                android:layout_width="300dp"
+                android:layout_height="300dp"
+                android:layout_gravity="center"
+                android:background="#80000000"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <GridLayout
+                android:id="@+id/gridLayout"
+                android:layout_width="300dp"
+                android:layout_height="300dp"
+                android:layout_gravity="center"
+                android:columnCount="3"
+                android:padding="16dp"
+                android:rowCount="3"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/dog"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/dog" />
+
+                <ImageView
+                    android:id="@+id/cat"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/cat" />
+
+                <ImageView
+                    android:id="@+id/car"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/car" />
+
+                <ImageView
+                    android:id="@+id/king"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/king" />
+
+                <ImageView
+                    android:id="@+id/queen"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/queen" />
+
+                <ImageView
+                    android:id="@+id/jar"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/jar" />
+
+                <ImageView
+                    android:id="@+id/frog"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/frog" />
+
+                <ImageView
+                    android:id="@+id/door"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/door" />
+
+                <ImageView
+                    android:id="@+id/rat"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_gravity="fill"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:importantForAccessibility="no"
+                    android:onClick="onImageClick"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/rat" />
+
+            </GridLayout>
+
+            <Button
+                android:id="@+id/startButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/testHearing_btnStart_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
+
+            <androidx.constraintlayout.utils.widget.ImageFilterView
+                android:id="@+id/left_ear"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:alpha="0.2"
+                android:src="@drawable/left_ear"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/startButton"
+                app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
+
+            <TextView
+                android:id="@+id/leftScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/testHearing_tvScore_defaultText"
+                app:layout_constraintEnd_toEndOf="@+id/left_ear"
+                app:layout_constraintStart_toStartOf="@+id/left_ear"
+                app:layout_constraintTop_toBottomOf="@+id/left_ear" />
+
+            <androidx.constraintlayout.utils.widget.ImageFilterView
+                android:id="@+id/right_ear"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:alpha="0.2"
+                android:src="@drawable/right_ear"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/startButton"
+                app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
+
+            <TextView
+                android:id="@+id/rightScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/testHearing_tvScore_defaultText"
+                app:layout_constraintEnd_toEndOf="@+id/right_ear"
+                app:layout_constraintStart_toStartOf="@+id/right_ear"
+                app:layout_constraintTop_toBottomOf="@+id/right_ear" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </RelativeLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/testHearing_navigationView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Press start, listen to the audio, \nthen select the appropriate image."
-        android:textSize="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/gridLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@menu/menu_header"
+        app:menu="@menu/menu_drawer" />
 
-    <FrameLayout
-        android:id="@+id/overlay"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_gravity="center"
-        android:background="#80000000"
-        android:clickable="true"
-        android:focusable="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <GridLayout
-        android:id="@+id/gridLayout"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_gravity="center"
-        android:columnCount="3"
-        android:padding="16dp"
-        android:rowCount="3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/dog"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/dog" />
-
-        <ImageView
-            android:id="@+id/cat"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/cat" />
-
-        <ImageView
-            android:id="@+id/car"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/car" />
-
-        <ImageView
-            android:id="@+id/king"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/king" />
-
-        <ImageView
-            android:id="@+id/queen"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/queen" />
-
-        <ImageView
-            android:id="@+id/jar"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/jar" />
-
-        <ImageView
-            android:id="@+id/frog"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/frog" />
-
-        <ImageView
-            android:id="@+id/door"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/door" />
-
-        <ImageView
-            android:id="@+id/rat"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_rowWeight="1"
-            android:layout_columnWeight="1"
-            android:layout_gravity="fill"
-            android:clickable="true"
-            android:onClick="onImageClick"
-            android:scaleType="fitCenter"
-            android:src="@drawable/rat" />
-
-    </GridLayout>
-
-    <Button
-        android:id="@+id/startButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Test"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
-
-    <androidx.constraintlayout.utils.widget.ImageFilterView
-        android:id="@+id/leftear"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:alpha="0.2"
-        android:src="@drawable/leftear"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/startButton"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
-
-    <TextView
-        android:id="@+id/leftScore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="0/9"
-        app:layout_constraintEnd_toEndOf="@+id/leftear"
-        app:layout_constraintStart_toStartOf="@+id/leftear"
-        app:layout_constraintTop_toBottomOf="@+id/leftear" />
-
-    <androidx.constraintlayout.utils.widget.ImageFilterView
-        android:id="@+id/rightear"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:alpha="0.2"
-        android:src="@drawable/rightear"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/startButton"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayout" />
-
-    <TextView
-        android:id="@+id/rightScore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="0/9"
-        app:layout_constraintEnd_toEndOf="@+id/rightear"
-        app:layout_constraintStart_toStartOf="@+id/rightear"
-        app:layout_constraintTop_toBottomOf="@+id/rightear" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
