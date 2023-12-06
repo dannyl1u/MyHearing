@@ -93,7 +93,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
                     apiData.map { record ->
                         val (lat, lng) = record.location.split(", ").map { it.toDouble() }
                         val timestamp = record.timestamp.toLong()
-                        val noiseLevel = record.noiseLevel.toDouble()
+                        val noiseLevel = record.noise_level.toDouble()
                         Triple(timestamp, LatLng(lat, lng), noiseLevel)
                     }
                 }
@@ -106,7 +106,7 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
 
     data class ApiRecord(
         val location: String,
-        val noiseLevel: Int,
+        val noise_level: Int,
         val timestamp: String
     )
 
