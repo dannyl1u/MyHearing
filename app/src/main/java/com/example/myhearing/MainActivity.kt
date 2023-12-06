@@ -132,8 +132,17 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Initialize chart
         initChart()
+
+        lifecycleScope.launch {
+            while (true) {
+                withContext(Dispatchers.Main) {
+                    updateChartData()
+                }
+
+                delay(500)
+            }
+        }
     }
 
     /** Service implementation, transferred over from DecibelMeterActivity
@@ -188,17 +197,6 @@ class MainActivity : AppCompatActivity() {
 
         val filter = IntentFilter("com.example.myhearing.NOISE_LEVEL_UPDATE")
         LocalBroadcastManager.getInstance(this).registerReceiver(noiseLevelReceiver, filter)
-
-
-        lifecycleScope.launch {
-            while (true) {
-                withContext(Dispatchers.Main) {
-                    updateChartData()
-                }
-
-                delay(500)
-            }
-        }
     }
 
     private fun initChart() {
