@@ -204,14 +204,24 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private suspend fun updateWeightedHeatmapData() {
         val currentTime = System.currentTimeMillis()
 
-        val newRecords = withContext(Dispatchers.IO) {
-            dbHelper.getRecordsSince(latestTimestamp)
-        }
-        val apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
-            lastApiCallTime = currentTime
-            fetchApiData()
+        var newRecords: List<Triple<Long, LatLng, Double>>
+        var apiRecords: List<Triple<Long, LatLng, Double>>
+
+        if (!latestLatLngInit || weightedHeatmapData.size == 0) {
+            withContext(Dispatchers.Default) {
+                newRecords = dbHelper.getRecordsSince(latestTimestamp)
+                apiRecords = emptyList()
+            }
         } else {
-            emptyList()
+            withContext(Dispatchers.IO) {
+                newRecords = dbHelper.getRecordsSince(latestTimestamp)
+                apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
+                    lastApiCallTime = currentTime
+                    fetchApiData()
+                } else {
+                    emptyList()
+                }
+            }
         }
 
         val combinedRecords = newRecords + apiRecords
