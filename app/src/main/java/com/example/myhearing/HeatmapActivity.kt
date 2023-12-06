@@ -74,6 +74,9 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     private val httpClient = OkHttpClient()
     private val gson = Gson()
 
+    private var lastApiCallTime = 0L
+    private val apiCallInterval = 5000L
+
     private suspend fun fetchApiData(): List<Triple<Long, LatLng, Double>> {
         return withContext(Dispatchers.IO) {
             try {
@@ -195,12 +198,19 @@ class HeatmapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private suspend fun updateWeightedHeatmapData() {
+        val currentTime = System.currentTimeMillis()
+
         val newRecords = withContext(Dispatchers.IO) {
             dbHelper.getRecordsSince(latestTimestamp)
         }
-        val apiRecords = fetchApiData()
+        val apiRecords = if (currentTime - lastApiCallTime > apiCallInterval) {
+            lastApiCallTime = currentTime
+            fetchApiData()
+        } else {
+            emptyList()
+        }
 
-        val combinedRecords = newRecords + apiRecords  // Combine records from database and API
+        val combinedRecords = newRecords + apiRecords
         println("Combined records: $combinedRecords")
 
         withContext(Dispatchers.Default) {
